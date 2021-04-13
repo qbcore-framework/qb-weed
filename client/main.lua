@@ -6,12 +6,9 @@ local currentHouse = nil
 QBCore = nil
 
 Citizen.CreateThread(function() 
-    while true do
-        Citizen.Wait(10)
-        if QBCore == nil then
-            TriggerEvent("QBCore:GetObject", function(obj) QBCore = obj end)    
-            Citizen.Wait(200)
-        end
+    while QBCore == nil do
+        TriggerEvent("QBCore:GetObject", function(obj) QBCore = obj end)    
+        Citizen.Wait(200)
     end
 end)
 
@@ -112,7 +109,7 @@ Citizen.CreateThread(function()
                         }
                     }
 
-                    local plyDistance = #(GetEntityCoords(ped) - vector3(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"])
+                    local plyDistance = #(GetEntityCoords(ped) - vector3(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"]))
 
                     if plyDistance < 0.8 then
 
@@ -123,7 +120,7 @@ Citizen.CreateThread(function()
                             else
                                 QBWeed.DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"] + 0.2, "Press ~g~ E ~w~ to harvest plant.")
                                 QBWeed.DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], 'Sort: ~g~'..plantData["plantSort"]["label"]..'~w~ ['..plantData["plantStats"]["gender"]..'] | Nutrition: ~b~'..plantData["plantStats"]["food"]..'% ~w~ | Health: ~b~'..plantData["plantStats"]["health"]..'%')
-                                if IsControlJustPressed(0, QBWeed.38) then
+                                if IsControlJustPressed(0, 38) then
                                     QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 8000, false, true, {
                                         disableMovement = true,
                                         disableCarMovement = true,
@@ -149,7 +146,7 @@ Citizen.CreateThread(function()
                             end
                         elseif plantData["plantStats"]["health"] == 0 then
                             QBWeed.DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], 'The plant has died. Press ~r~ E ~w~ to remove plant.')
-                            if IsControlJustPressed(0, QBWeed.38) then
+                            if IsControlJustPressed(0, 38) then
                                 QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 8000, false, true, {
                                     disableMovement = true,
                                     disableCarMovement = true,
