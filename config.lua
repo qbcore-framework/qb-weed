@@ -3,8 +3,8 @@ QBWeed.HarvestTime = 40 * 1000
 
 QBWeed.Plants = {
     ["og-kush"] = {
-        ["label"] = "OG Kush",
-        ["item"] = "ogkush",
+        ["label"] = "OGKush 2g",
+        ["item"] = "weed_og-kush",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -17,8 +17,8 @@ QBWeed.Plants = {
         ["highestStage"] = "stage-g"
     },
     ["amnesia"] = {
-        ["label"] = "Amnesia",
-        ["item"] = "amnesia",
+        ["label"] = "Amnesia 2g",
+        ["item"] = "weed_amnesia",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -31,8 +31,8 @@ QBWeed.Plants = {
         ["highestStage"] = "stage-g"
     },
     ["skunk"] = {
-        ["label"] = "Skunk",
-        ["item"] = "skunk",
+        ["label"] = "Skunk 2g",
+        ["item"] = "weed_skunk",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -45,8 +45,8 @@ QBWeed.Plants = {
         ["highestStage"] = "stage-g"
     },
     ["ak47"] = {
-        ["label"] = "AK 47",
-        ["item"] = "ak47",
+        ["label"] = "AK47 2g",
+        ["item"] = "weed_ak47",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -59,8 +59,8 @@ QBWeed.Plants = {
         ["highestStage"] = "stage-g"
     },
     ["purple-haze"] = {
-        ["label"] = "Purple Haze",
-        ["item"] = "purplehaze",
+        ["label"] = "Purple Haze 2g",
+        ["item"] = "weed_purple-haze",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -73,8 +73,8 @@ QBWeed.Plants = {
         ["highestStage"] = "stage-g"
     },
     ["white-widow"] = {
-        ["label"] = "White Widow",
-        ["item"] = "whitewidow",
+        ["label"] = "White Widow 2g",
+        ["item"] = "weed_white-widow",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
