@@ -38,38 +38,38 @@ AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse
 
     -- if currentHouse ~= nil then
         
-    --     QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES ('"..currentHouse.."', '"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
+    --     QBCore.Functions.ExecuteSql(true, nil, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES ('"..currentHouse.."', '"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
     --     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
     -- else
-    --     QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`coords`, `gender`, `sort`, `plantid`) VALUES ('"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
+    --     QBCore.Functions.ExecuteSql(true, nil, "INSERT INTO `house_plants` (`coords`, `gender`, `sort`, `plantid`) VALUES ('"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
     -- end
-    QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES ('"..currentHouse.."', '"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
+    QBCore.Functions.ExecuteSql(true, {['a'] = currentHouse, ['b'] = coords, ['c'] = gender, ['d'] = sort, ['e'] = math.random(111111,999999)}, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES (@a, @b, @c, @d, @e)")
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
 end)
 
 RegisterServerEvent('qb-weed:server:removeDeathPlant')
 AddEventHandler('qb-weed:server:removeDeathPlant', function(building, plantId)
-    QBCore.Functions.ExecuteSql(true, "DELETE FROM `house_plants` WHERE plantid = '"..plantId.."' AND building = '"..building.."'")
+    QBCore.Functions.ExecuteSql(true, {['a'] = plantId, ['b'] = building}, "DELETE FROM `house_plants` WHERE plantid = @a AND building = @b")
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, building)
 end)
 
 Citizen.CreateThread(function()
     while true do
-        QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants`", function(housePlants)
+        QBCore.Functions.ExecuteSql(false, nil, "SELECT * FROM `house_plants`", function(housePlants)
             for k, v in pairs(housePlants) do
                 if housePlants[k].food >= 50 then
-                    QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(housePlants[k].food - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                    QBCore.Functions.ExecuteSql(true, {['a'] = (housePlants[k].food - 1), ['b'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `food` = @a WHERE `plantid` = @b")
                     if housePlants[k].health + 1 < 100 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `health` = '"..(housePlants[k].health + 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        QBCore.Functions.ExecuteSql(true, {['a'] = (housePlants[k].health + 1), ['b'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `health` = @a WHERE `plantid` = @b")
                     end
                 end
 
                 if housePlants[k].food < 50 then
                     if housePlants[k].food - 1 >= 0 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(housePlants[k].food - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        QBCore.Functions.ExecuteSql(true, {['a'] = (housePlants[k].food - 1), ['b'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `food` = @a WHERE `plantid` = @b")
                     end
                     if housePlants[k].health - 1 >= 0 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `health` = '"..(housePlants[k].health - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        QBCore.Functions.ExecuteSql(true, {['a'] = (housePlants[k].health - 1), ['b'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `health` = @a WHERE `plantid` = @b")
                     end
                 end
             end
@@ -83,28 +83,28 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants`", function(housePlants)
+        QBCore.Functions.ExecuteSql(false, nil, "SELECT * FROM `house_plants`", function(housePlants)
             for k, v in pairs(housePlants) do
                 if housePlants[k].health > 50 then
                     local Grow = math.random(1, 3)
                     if housePlants[k].progress + Grow < 100 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `progress` = '"..(housePlants[k].progress + 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        QBCore.Functions.ExecuteSql(true, {['a'] = (housePlants[k].progress + 1), ['b'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `progress` = @a WHERE `plantid` = @b")
                     elseif housePlants[k].progress + Grow >= 100 then
                         if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
                             if housePlants[k].stage == "stage-a" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-b' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-b' WHERE `plantid` = @a")
                             elseif housePlants[k].stage == "stage-b" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-c' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-c' WHERE `plantid` = @a")
                             elseif housePlants[k].stage == "stage-c" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-d' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-d' WHERE `plantid` = @a")
                             elseif housePlants[k].stage == "stage-d" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-e' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-e' WHERE `plantid` = @a")
                             elseif housePlants[k].stage == "stage-e" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-f' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-f' WHERE `plantid` = @a")
                             elseif housePlants[k].stage == "stage-f" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-g' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                QBCore.Functions.ExecuteSql(true, {['a'] = housePlants[k].plantid}, "UPDATE `house_plants` SET `stage` = 'stage-g' WHERE `plantid` = @a")
                             end
-                            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `progress` = '0' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                            QBCore.Functions.ExecuteSql(true, nil, "UPDATE `house_plants` SET `progress` = '0' WHERE `plantid` = '"..housePlants[k].plantid.."'")
                         end
                     end
                 end
@@ -168,12 +168,12 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
     if weedBag ~= nil then
         if weedBag.amount >= sndAmount then
             if house ~= nil then 
-                QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants` WHERE plantid = '"..plantId.."' AND building = '"..house.."'", function(result)
+                QBCore.Functions.ExecuteSql(false, {['a'] = plantId, ['b'] = house}, "SELECT * FROM `house_plants` WHERE plantid = @a AND building = @b", function(result)
                     if result[1] ~= nil then
                         Player.Functions.AddItem('weed_'..plantName..'_seed', amount)
                         Player.Functions.AddItem('weed_'..plantName, sndAmount)
                         Player.Functions.RemoveItem('empty_weed_bag', 1)
-                        QBCore.Functions.ExecuteSql(true, "DELETE FROM `house_plants` WHERE plantid = '"..plantId.."' AND building = '"..house.."'")
+                        QBCore.Functions.ExecuteSql(true, {['a'] = plantId, ['b'] = house}, "DELETE FROM `house_plants` WHERE plantid = @a AND building = @b")
                         TriggerClientEvent('QBCore:Notify', src, 'The plant has been harvested', 'success', 3500)
                         TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
                     else
@@ -196,12 +196,12 @@ AddEventHandler('qb-weed:server:foodPlant', function(house, amount, plantName, p
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
 
-    QBCore.Functions.ExecuteSql(false, 'SELECT * FROM `house_plants` WHERE `building` = "'..house..'" AND `sort` = "'..plantName..'" AND `plantid` = "'..tostring(plantId)..'"', function(plantStats)
+    QBCore.Functions.ExecuteSql(false, {['a'] = house, ['b'] = plantName, ['c'] = tostring(plantId)}, 'SELECT * FROM `house_plants` WHERE `building` = @a AND `sort` = @b AND `plantid` = @c', function(plantStats)
         TriggerClientEvent('QBCore:Notify', src, QBWeed.Plants[plantName]["label"]..' | Nutrition: '..plantStats[1].food..'% + '..amount..'% ('..(plantStats[1].food + amount)..'%)', 'success', 3500)
         if plantStats[1].food + amount > 100 then
-            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '100' WHERE `building` = '"..house.."' AND `plantid` = '"..plantId.."'")
+            QBCore.Functions.ExecuteSql(true, {['a'] = house, ['b'] = plantId}, "UPDATE `house_plants` SET `food` = '100' WHERE `building` = @a AND `plantid` = @b")
         else
-            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(plantStats[1].food + amount).."' WHERE `building` = '"..house.."' AND `plantid` = '"..plantId.."'")
+            QBCore.Functions.ExecuteSql(true, {['a'] = (plantStats[1].food + amount), ['b'] = house, ['c'] = plantId}, "UPDATE `house_plants` SET `food` = @a WHERE `building` = @b AND `plantid` = @c")
         end
         Player.Functions.RemoveItem('weed_nutrition', 1)
         TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
