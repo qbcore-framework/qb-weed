@@ -165,7 +165,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
     local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
     local sndAmount = math.random(12, 16)
 
-    if weedBag > 0 then
+    if weedBag ~= nil then
         if weedBag.amount >= sndAmount then
             if house ~= nil then 
                 QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants` WHERE plantid = '"..plantId.."' AND building = '"..house.."'", function(result)
