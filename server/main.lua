@@ -20,16 +20,6 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(sou
     end)
 end)
 
--- QBCore.Commands.Add("placeplant", "", {}, false, function(source, args)
---     local src           = source
---     local player        = QBCore.Functions.GetPlayer(src)
---     local type          = args[1]
-
---     if QBWeed.Plants[type] ~= nil then
---         TriggerClientEvent('qb-weed:client:placePlant', src, type)
---     end
--- end)
-
 RegisterServerEvent('qb-weed:server:placePlant')
 AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse)
     local random = math.random(1, 2)
@@ -55,7 +45,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants`", function(housePlants)
+        exports.ghmattimysql:execute('SELECT * FROM house_plants', function(housePlants)
             for k, v in pairs(housePlants) do
                 if housePlants[k].food >= 50 then
                     QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(housePlants[k].food - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
@@ -83,7 +73,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants`", function(housePlants)
+        exports.ghmattimysql:execute('SELECT * FROM house_plants', function(housePlants)
             for k, v in pairs(housePlants) do
                 if housePlants[k].health > 50 then
                     local Grow = math.random(1, 3)
@@ -168,7 +158,10 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
     if weedBag ~= nil then
         if weedBag.amount >= sndAmount then
             if house ~= nil then 
-                QBCore.Functions.ExecuteSql(false, "SELECT * FROM `house_plants` WHERE plantid = '"..plantId.."' AND building = '"..house.."'", function(result)
+                exports.ghmattimysql:execute('SELECT * FROM house_plants WHERE plantid=@plantid AND building=@building', {
+                    ['@plantid'] = plantId, 
+                    ['@building'] = house
+                }, function(result)
                     if result[1] ~= nil then
                         Player.Functions.AddItem('weed_'..plantName..'_seed', amount)
                         Player.Functions.AddItem('weed_'..plantName, sndAmount)
@@ -195,8 +188,11 @@ RegisterServerEvent('qb-weed:server:foodPlant')
 AddEventHandler('qb-weed:server:foodPlant', function(house, amount, plantName, plantId)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-
-    QBCore.Functions.ExecuteSql(false, 'SELECT * FROM `house_plants` WHERE `building` = "'..house..'" AND `sort` = "'..plantName..'" AND `plantid` = "'..tostring(plantId)..'"', function(plantStats)
+    exports.ghmattimysql:execute('SELECT * FROM house_plants WHERE building=@building AND sort=@sort AND plantid=@plantid', {
+        ['@building'] = house, 
+        ['@sort'] = plantName,
+        ['@plantid'] = tostring(plantId)
+    }, function(plantStats)
         TriggerClientEvent('QBCore:Notify', src, QBWeed.Plants[plantName]["label"]..' | Nutrition: '..plantStats[1].food..'% + '..amount..'% ('..(plantStats[1].food + amount)..'%)', 'success', 3500)
         if plantStats[1].food + amount > 100 then
             QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '100' WHERE `building` = '"..house.."' AND `plantid` = '"..plantId.."'")
