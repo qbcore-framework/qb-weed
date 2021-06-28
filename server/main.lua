@@ -25,15 +25,13 @@ AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse
     local random = math.random(1, 2)
     local gender
     if random == 1 then gender = "man" else gender = "woman" end
-
-    -- if currentHouse ~= nil then
-        
-    --     QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES ('"..currentHouse.."', '"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
-    --     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
-    -- else
-    --     QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`coords`, `gender`, `sort`, `plantid`) VALUES ('"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
-    -- end
-    QBCore.Functions.ExecuteSql(true, "INSERT INTO `house_plants` (`building`, `coords`, `gender`, `sort`, `plantid`) VALUES ('"..currentHouse.."', '"..coords.."', '"..gender.."', '"..sort.."', '"..math.random(111111,999999).."')")
+    exports.ghmattimysql:execute('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (@building, @coords, @gender, @sort, @plantid)', {
+        ['@building'] = currentHouse,
+        ['@coords'] = coords,
+        ['@gender'] = gender,
+        ['@sort'] = sort,
+        ['@plantid'] = math.random(111111,999999)
+    })
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
 end)
 
@@ -48,18 +46,18 @@ Citizen.CreateThread(function()
         exports.ghmattimysql:execute('SELECT * FROM house_plants', function(housePlants)
             for k, v in pairs(housePlants) do
                 if housePlants[k].food >= 50 then
-                    QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(housePlants[k].food - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                    exports.ghmattimysql:execute('UPDATE house_plants SET food=@food WHERE plantid=@plantid', {['@food'] = (housePlants[k].food - 1), ['@plantid'] = housePlants[k].plantid})
                     if housePlants[k].health + 1 < 100 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `health` = '"..(housePlants[k].health + 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        exports.ghmattimysql:execute('UPDATE house_plants SET health=@health WHERE plantid=@plantid', {['@health'] = (housePlants[k].health + 1), ['@plantid'] = housePlants[k].plantid})
                     end
                 end
 
                 if housePlants[k].food < 50 then
                     if housePlants[k].food - 1 >= 0 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(housePlants[k].food - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        exports.ghmattimysql:execute('UPDATE house_plants SET food=@food WHERE plantid=@plantid', {['@food'] = (housePlants[k].food - 1), ['@plantid'] = housePlants[k].plantid})
                     end
                     if housePlants[k].health - 1 >= 0 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `health` = '"..(housePlants[k].health - 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        exports.ghmattimysql:execute('UPDATE house_plants SET health=@health WHERE plantid=@plantid', {['@health'] = (housePlants[k].health - 1), ['@plantid'] = housePlants[k].plantid})
                     end
                 end
             end
@@ -78,23 +76,23 @@ Citizen.CreateThread(function()
                 if housePlants[k].health > 50 then
                     local Grow = math.random(1, 3)
                     if housePlants[k].progress + Grow < 100 then
-                        QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `progress` = '"..(housePlants[k].progress + 1).."' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                        exports.ghmattimysql:execute('UPDATE house_plants SET progress=@progress WHERE plantid=@plantid', {['@progress'] = (housePlants[k].progress + 1), ['@plantid'] = housePlants[k].plantid})
                     elseif housePlants[k].progress + Grow >= 100 then
                         if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
                             if housePlants[k].stage == "stage-a" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-b' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-b', ['@plantid'] = housePlants[k].plantid})
                             elseif housePlants[k].stage == "stage-b" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-c' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-c', ['@plantid'] = housePlants[k].plantid})
                             elseif housePlants[k].stage == "stage-c" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-d' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-d', ['@plantid'] = housePlants[k].plantid})
                             elseif housePlants[k].stage == "stage-d" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-e' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-e', ['@plantid'] = housePlants[k].plantid})
                             elseif housePlants[k].stage == "stage-e" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-f' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-f', ['@plantid'] = housePlants[k].plantid})
                             elseif housePlants[k].stage == "stage-f" then
-                                QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `stage` = 'stage-g' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                                exports.ghmattimysql:execute('UPDATE house_plants SET stage=@stage WHERE plantid=@plantid', {['@stage'] = 'stage-g', ['@plantid'] = housePlants[k].plantid})
                             end
-                            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `progress` = '0' WHERE `plantid` = '"..housePlants[k].plantid.."'")
+                            exports.ghmattimysql:execute('UPDATE house_plants SET progress=@progress WHERE plantid=@plantid', {['@progress'] = 0, ['@plantid'] = housePlants[k].plantid})
                         end
                     end
                 end
@@ -195,9 +193,17 @@ AddEventHandler('qb-weed:server:foodPlant', function(house, amount, plantName, p
     }, function(plantStats)
         TriggerClientEvent('QBCore:Notify', src, QBWeed.Plants[plantName]["label"]..' | Nutrition: '..plantStats[1].food..'% + '..amount..'% ('..(plantStats[1].food + amount)..'%)', 'success', 3500)
         if plantStats[1].food + amount > 100 then
-            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '100' WHERE `building` = '"..house.."' AND `plantid` = '"..plantId.."'")
+            exports.ghmattimysql:execute('UPDATE house_plants SET food=@food WHERE building=@building AND plantid=@plantid', {
+                ['@food'] = 100,
+                ['@building'] = house,
+                ['@plantid'] = plantId
+            })
         else
-            QBCore.Functions.ExecuteSql(true, "UPDATE `house_plants` SET `food` = '"..(plantStats[1].food + amount).."' WHERE `building` = '"..house.."' AND `plantid` = '"..plantId.."'")
+            exports.ghmattimysql:execute('UPDATE house_plants SET food=@food WHERE building=@building AND plantid=@plantid', {
+                ['@food'] = (plantStats[1].food + amount),
+                ['@building'] = house,
+                ['@plantid'] = plantId
+            })
         end
         Player.Functions.RemoveItem('weed_nutrition', 1)
         TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
