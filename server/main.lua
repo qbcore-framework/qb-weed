@@ -1,9 +1,3 @@
-QBCore = nil
-
-TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-
---CODE
-
 QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(source, cb, building)
     local buildingPlants = {}
 

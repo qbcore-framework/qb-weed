@@ -3,15 +3,6 @@ local housePlants = {}
 local insideHouse = false
 local currentHouse = nil
 
-QBCore = nil
-
-Citizen.CreateThread(function() 
-    while QBCore == nil do
-        TriggerEvent("QBCore:GetObject", function(obj) QBCore = obj end)    
-        Citizen.Wait(200)
-    end
-end)
-
 QBWeed.DrawText3Ds = function(x, y, z, text)
 	SetTextScale(0.35, 0.35)
     SetTextFont(4)
