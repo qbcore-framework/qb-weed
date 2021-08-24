@@ -241,12 +241,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
                 anim = "base",
                 flags = 16,
             }, {}, {}, function() -- Done
-                ClearPedTasks(ped)
-                plantObject = CreateObject(plantData["plantModel"], plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], false, false, false)
-                FreezeEntityPosition(plantObject, true)
-                SetEntityAsMissionEntity(plantObject, false, false)
-                PlaceObjectOnGroundProperly(plantObject)
-            
+                ClearPedTasks(ped)            
                 TriggerServerEvent('qb-weed:server:placePlant', json.encode(plantData["plantCoords"]), type, currentHouse)
                 TriggerServerEvent('qb-weed:server:removeSeed', item.slot, type)
             end, function() -- Cancel
