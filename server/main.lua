@@ -31,7 +31,7 @@ end)
 
 RegisterServerEvent('qb-weed:server:removeDeathPlant')
 AddEventHandler('qb-weed:server:removeDeathPlant', function(building, plantId)
-    exports.ghmattimysql:execute('DELETE FROM house_plants WHERE plantid=@plantid AND building=@buildling', {['@plantid'] = plantId, ['@building'] = building})
+    exports.ghmattimysql:execute('DELETE FROM house_plants WHERE plantid=@plantid AND building=@building', {['@plantid'] = plantId, ['@building'] = building})
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, building)
 end)
 
@@ -149,7 +149,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
                     Player.Functions.AddItem('weed_'..plantName..'_seed', amount)
                     Player.Functions.AddItem('weed_'..plantName, sndAmount)
                     Player.Functions.RemoveItem('empty_weed_bag', 1)
-                    exports.ghmattimysql:execute('DELETE FROM house_plants WHERE plantid=@plantid AND building=@buildling', {['@plantid'] = plantId, ['@building'] = house})
+                    exports.ghmattimysql:execute('DELETE FROM house_plants WHERE plantid=@plantid AND building=@building', {['@plantid'] = plantId, ['@building'] = house})
                     TriggerClientEvent('QBCore:Notify', src, 'The plant has been harvested', 'success', 3500)
                     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
                 else
