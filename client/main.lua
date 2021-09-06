@@ -231,6 +231,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
 
     if currentHouse ~= nil then
         if ClosestPlant == 0 then
+	LocalPlayer.state:set("inv_busy", true, true)
             QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 8000, false, true, {
                 disableMovement = true,
                 disableCarMovement = true,
@@ -240,6 +241,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
                 animDict = "amb@world_human_gardener_plant@male@base",
                 anim = "base",
                 flags = 16,
+		LocalPlayer.state:set("inv_busy", false, true)				
             }, {}, {}, function() -- Done
                 ClearPedTasks(ped)            
                 TriggerServerEvent('qb-weed:server:placePlant', json.encode(plantData["plantCoords"]), type, currentHouse)
@@ -247,6 +249,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
             end, function() -- Cancel
                 ClearPedTasks(ped)
                 QBCore.Functions.Notify("Process Canceled", "error")
+		LocalPlayer.state:set("inv_busy", false, true)				
             end)
         else
             QBCore.Functions.Notify("Can't Place Here", 'error', 3500)
@@ -291,6 +294,7 @@ AddEventHandler('qb-weed:client:foodPlant', function(item)
                 if plantData["plantStats"]["food"] == 100 then
                     QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
                 else
+		LocalPlayer.state:set("inv_busy", true, true)
                     QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", math.random(4000, 8000), false, true, {
                         disableMovement = true,
                         disableCarMovement = true,
@@ -300,12 +304,15 @@ AddEventHandler('qb-weed:client:foodPlant', function(item)
                         animDict = "timetable@gardener@filling_can",
                         anim = "gar_ig_5_filling_can",
                         flags = 16,
+			
+			LocalPlayer.state:set("inv_busy", false, true)
                     }, {}, {}, function() -- Done
                         ClearPedTasks(ped)
                         local newFood = math.random(40, 60)
                         TriggerServerEvent('qb-weed:server:foodPlant', currentHouse, newFood, plantData["plantSort"]["name"], plantData["plantStats"]["plantId"])
                     end, function() -- Cancel
                         ClearPedTasks(ped)
+			LocalPlayer.state:set("inv_busy", false, true)					
                         QBCore.Functions.Notify("Process Canceled", "error")
                     end)
                 end
