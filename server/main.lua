@@ -67,7 +67,7 @@ Citizen.CreateThread(function()
             if housePlants[k].health > 50 then
                 local Grow = math.random(1, 3)
                 if housePlants[k].progress + Grow < 100 then
-                    exports.ghmattimysql:execute('UPDATE house_plants SET progress=@progress WHERE plantid=@plantid', {['@progress'] = (housePlants[k].progress + 1), ['@plantid'] = housePlants[k].plantid})
+                    exports.ghmattimysql:execute('UPDATE house_plants SET progress=@progress WHERE plantid=@plantid', {['@progress'] = (housePlants[k].progress + Grow), ['@plantid'] = housePlants[k].plantid})
                 elseif housePlants[k].progress + Grow >= 100 then
                     if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
                         if housePlants[k].stage == "stage-a" then
