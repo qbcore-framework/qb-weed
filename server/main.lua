@@ -23,7 +23,7 @@ AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse
     else
         gender = "woman"
     end
-    exports.oxmysql:insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?)',
+    exports.oxmysql:insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?, ?, ?, ?, ?)',
         {currentHouse, coords, gender, sort, math.random(111111, 999999)})
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
 end)
