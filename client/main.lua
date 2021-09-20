@@ -38,11 +38,11 @@ function spawnHousePlants()
                 }
 
                 plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], false, false, false)
+                while not plantProp do Wait(0) end
+                PlaceObjectOnGroundProperly(plantProp)
+                Wait(100)
                 FreezeEntityPosition(plantProp, true)
                 SetEntityAsMissionEntity(plantProp, false, false)
-                PlaceObjectOnGroundProperly(plantProp)
-                Citizen.Wait(20)
-                PlaceObjectOnGroundProperly(plantProp)
             end
             plantSpawned = true
         end
