@@ -13,7 +13,8 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(sou
 end)
 
 -- Places a new plant, tells client to render it, removes seed
-RegisterServerEvent('qb-weed:server:placePlant', function(house, coords, sort, seedSlot)
+RegisterServerEvent('qb-weed:server:placePlant')
+AddEventHandler('qb-weed:server:placePlant', function(house, coords, sort, seedSlot)
     local gender = "man"
     if math.random(0, 1) == 1 then gender = "woman" end
     local plantid = math.random(111111, 999999) -- NOTE: Could possibly overwrite a key in SQL by randomly choosing
@@ -28,7 +29,8 @@ RegisterServerEvent('qb-weed:server:placePlant', function(house, coords, sort, s
 end)
 
 -- Fertilizes plant, removes weed_nutrition
-RegisterServerEvent('qb-weed:server:fertilizePlant', function(house, plantFood, plantSort, plantid)
+RegisterServerEvent('qb-weed:server:fertilizePlant')
+AddEventHandler('qb-weed:server:fertilizePlant', function(house, plantFood, plantSort, plantid)
     local Player = QBCore.Functions.GetPlayer(source)
     local amount = math.random(40, 60)
     local newFood = math.min(plantFood + amount, 100)
@@ -42,7 +44,8 @@ RegisterServerEvent('qb-weed:server:fertilizePlant', function(house, plantFood, 
 end)
 
 -- Removes plant, gives player seeds & weed, removes weed bags
-RegisterServerEvent('qb-weed:server:harvestPlant', function(house, gender, name, plantid)
+RegisterServerEvent('qb-weed:server:harvestPlant')
+AddEventHandler('qb-weed:server:harvestPlant', function(house, gender, name, plantid)
     local Player = QBCore.Functions.GetPlayer(source)
     local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
     local weedAmount = math.random(12, 16)
@@ -72,7 +75,8 @@ RegisterServerEvent('qb-weed:server:harvestPlant', function(house, gender, name,
 end)
 
 -- Removes a dead plant
-RegisterServerEvent('qb-weed:server:removeDeadPlant', function(building, plantid)
+RegisterServerEvent('qb-weed:server:removeDeadPlant')
+AddEventHandler('qb-weed:server:removeDeadPlant', function(building, plantid)
     exports.oxmysql:execute('DELETE FROM house_plants WHERE plantid = ? AND building = ?', {plantid, building})
     TriggerClientEvent('qb-weed:client:removePlant', -1, plantid)
 end)
