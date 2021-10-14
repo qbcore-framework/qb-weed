@@ -6,7 +6,7 @@ local houseProps = {}
 local minProximity = 0.8
 
 DrawText3Ds = function(x, y, z, text)
-	SetTextScale(0.35, 0.35)
+    SetTextScale(0.35, 0.35)
     SetTextFont(4)
     SetTextProportional(1)
     SetTextColour(255, 255, 255, 215)
@@ -28,28 +28,28 @@ function loadAnimDict(dict)
 end
 
 -- Helper functions
-function insideHouse()
+local function insideHouse()
     return (currHouse ~= nil)
 end
-function populateHousePlants(plants)
+local function populateHousePlants(plants)
     for _, plant in pairs(plants) do
         housePlants[plant.plantid] = plant
     end
 end
-function updateHousePlant(plantid)
-    QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlant', function(plants)
-        populateHousePlants(plants)
+local function updateHousePlant(plantid)
+    QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlant', function(plant)
+        populateHousePlants(plant)
     end, currHouse, plantid)
 end
-function updateHousePlants()
+local function updateHousePlants()
     if insideHouse() then
-        QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
+        QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlants', function(plants)
             populateHousePlants(plants)
         end, currHouse)
     end
 end
 
-function renderPlant(plantid)
+local function renderPlant(plantid)
     if (insideHouse() and housePlants[plantid] ~= nil) then
         Citizen.CreateThread(function()
             local plant = housePlants[plantid]
@@ -65,7 +65,7 @@ function renderPlant(plantid)
         end)
     end
 end
-function unrenderPlant(plantid)
+local function unrenderPlant(plantid)
     if (houseProps[plantid] ~= nil) then
         local prop = houseProps[plantid]
         houseProps[plantid] = nil
@@ -73,12 +73,12 @@ function unrenderPlant(plantid)
     end
 end
 
-function renderPlants()
+local function renderPlants()
     for plantid, _ in pairs(housePlants) do
         renderPlant(plantid)
     end
 end
-function unrenderPlants()
+local function unrenderPlants()
     for plantid, _ in pairs(housePlants) do
         unrenderPlant(plantid)
     end
@@ -102,11 +102,11 @@ RegisterNetEvent('qb-weed:client:leaveHouse', function()
 end)
 
 -- Event triggered by the server when a single plant is fertilized
-RegisterNetEvent('qb-weed:client:refreshSinglePlant', function (plantid)
+RegisterNetEvent('qb-weed:client:refreshPlantStats', function (plantid)
     updateHousePlant(plantid)
 end)
 -- Event triggered by the server when a growth cycle or a food and nutrition cycle occurs
-RegisterNetEvent('qb-weed:client:refreshAllPlants', function ()
+RegisterNetEvent('qb-weed:client:refreshAllPlantStats', function ()
     updateHousePlants()
 end)
 -- Event triggered by the server to refresh model after stage update, manually maintains state of houseProps
@@ -130,8 +130,6 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
     if insideHouse() then
         local ped = PlayerPedId()
         local pedOffset = 0.75
-        local plantProp = QBWeed.Plants[sort]["stage-a"]
-        local plantLabel = QBWeed.Plants[sort]["label"]
         local plantCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
 
         -- Check if any plants are too close in proximity to new position
@@ -154,7 +152,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
                 flags = 16,
             }, {}, {}, function() -- Done
                 ClearPedTasks(ped)
-                TriggerServerEvent('qb-weed:server:placePlant', currHouse, json.encode(plantCoords), sort, item.slot)
+                TriggerServerEvent('qb-weed:server:placePlant', currHouse, plantCoords, sort, item.slot)
             end, function() -- Cancel
                 ClearPedTasks(ped)
                 QBCore.Functions.Notify("Process Cancelled", "error")
@@ -172,12 +170,10 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
     if (insideHouse() and closestPlantid ~= 0) then
         local plant = housePlants[closestPlantid]
         local coords = json.decode(plant.coords)
-        local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coord.y, coords.z))
+        local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
         if plyDistance < minPoximity + 0.2 then
             local ped = PlayerPedId()
-            local gender = "M"
-            if plant.gender == "woman" then gender = "F" end
 
             if plant.food == 100 then
                 QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
@@ -193,7 +189,7 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
                     flags = 16,
                 }, {}, {}, function() -- Done
                     ClearPedTasks(ped)
-                    TriggerServerEvent('qb-weed:server:fertilizePlant', currHouse, amount, plant.food, plant.sort, plant.plantid)
+                    TriggerServerEvent('qb-weed:server:fertilizePlant', currHouse, plant)
                 end, function() -- Cancel
                     ClearPedTasks(ped)
                     QBCore.Functions.Notify("Process Cancelled", "error")
@@ -247,7 +243,7 @@ Citizen.CreateThread(function()
                                     flags = 16,
                                 }, {}, {}, function() -- Done
                                     ClearPedTasks(ped)
-                                    TriggerServerEvent('qb-weed:server:harvestPlant', currHouse, gender, plant.sort, plant.plantid)
+                                    TriggerServerEvent('qb-weed:server:harvestPlant', currHouse, plant)
                                 end, function() -- Cancel
                                     ClearPedTasks(ped)
                                     QBCore.Functions.Notify("Process Cancelled", "error")
@@ -273,7 +269,7 @@ Citizen.CreateThread(function()
                                 flags = 16,
                             }, {}, {}, function() -- Done
                                 ClearPedTasks(ped)
-                                TriggerServerEvent('qb-weed:server:removeDeadPlant', currHouse, plant.plantid)
+                                TriggerServerEvent('qb-weed:server:removeDeadPlant', currHouse, plant)
                             end, function() -- Cancel
                                 ClearPedTasks(ped)
                                 QBCore.Functions.Notify("Process Cancelled", "error")
@@ -283,7 +279,7 @@ Citizen.CreateThread(function()
                 end
             end
         end
-    
+
         if not insideHouse() then
             Citizen.Wait(5000)
         end
