@@ -160,7 +160,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
                 if result[1] ~= nil then
                     Player.Functions.AddItem('weed_' .. plantName .. '_seed', amount)
                     Player.Functions.AddItem('weed_' .. plantName, sndAmount)
-                    Player.Functions.RemoveItem('empty_weed_bag', 1)
+                    Player.Functions.RemoveItem('empty_weed_bag', sndAmount)
                     exports.oxmysql:execute('DELETE FROM house_plants WHERE plantid = ? AND building = ?',
                         {plantId, house})
                     TriggerClientEvent('QBCore:Notify', src, 'The plant has been harvested', 'success', 3500)
