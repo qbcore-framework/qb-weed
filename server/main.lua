@@ -3,7 +3,7 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(sou
 
     exports.oxmysql:execute('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
         for i = 1, #plants, 1 do
-            table.insert(buildingPlants, plants[i])
+            buildingPlants[#buildingPlants+1] = plants[i]
         end
 
         if buildingPlants ~= nil then
