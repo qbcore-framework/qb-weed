@@ -1,4 +1,4 @@
-local isLoggedIn = true
+local QBCore = exports['qb-core']:GetCoreObject()
 local housePlants = {}
 local insideHouse = false
 local currentHouse = nil
@@ -19,7 +19,7 @@ DrawText3Ds = function(x, y, z, text)
 end
 
 RegisterNetEvent('qb-weed:client:getHousePlants')
-AddEventHandler('qb-weed:client:getHousePlants', function(house)    
+AddEventHandler('qb-weed:client:getHousePlants', function(house)
     QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
         currentHouse = house
         housePlants[currentHouse] = plants
@@ -59,7 +59,7 @@ function despawnHousePlants()
 
                 for _, stage in pairs(QBWeed.Plants[housePlants[currentHouse][k].sort]["stages"]) do
                     local closestPlant = GetClosestObjectOfType(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], 3.5, GetHashKey(stage), false, false, false)
-                    if closestPlant ~= 0 then                    
+                    if closestPlant ~= 0 then
                         DeleteObject(closestPlant)
                     end
                 end
@@ -241,7 +241,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
                 anim = "base",
                 flags = 16,
             }, {}, {}, function() -- Done
-                ClearPedTasks(ped)            
+                ClearPedTasks(ped)
                 TriggerServerEvent('qb-weed:server:placePlant', json.encode(plantData["plantCoords"]), type, currentHouse)
                 TriggerServerEvent('qb-weed:server:removeSeed', item.slot, type)
             end, function() -- Cancel
@@ -263,8 +263,8 @@ AddEventHandler('qb-weed:client:foodPlant', function(item)
         if ClosestTarget ~= 0 then
             local ped = PlayerPedId()
             local gender = "M"
-            if housePlants[currentHouse][ClosestTarget].gender == "woman" then 
-                gender = "F" 
+            if housePlants[currentHouse][ClosestTarget].gender == "woman" then
+                gender = "F"
             end
 
             plantData = {
