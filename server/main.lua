@@ -16,8 +16,7 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(sou
     end)
 end)
 
-RegisterServerEvent('qb-weed:server:placePlant')
-AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse)
+RegisterNetEvent('qb-weed:server:placePlant', function(coords, sort, currentHouse)
     local random = math.random(1, 2)
     local gender
     if random == 1 then
@@ -30,13 +29,12 @@ AddEventHandler('qb-weed:server:placePlant', function(coords, sort, currentHouse
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
 end)
 
-RegisterServerEvent('qb-weed:server:removeDeathPlant')
-AddEventHandler('qb-weed:server:removeDeathPlant', function(building, plantId)
+RegisterNetEvent('qb-weed:server:removeDeathPlant', function(building, plantId)
     exports.oxmysql:execute('DELETE FROM house_plants WHERE plantid = ? AND building = ?', {plantId, building})
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, building)
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local housePlants = exports.oxmysql:executeSync('SELECT * FROM house_plants', {})
         for k, v in pairs(housePlants) do
@@ -61,11 +59,11 @@ Citizen.CreateThread(function()
             end
         end
         TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
-        Citizen.Wait((60 * 1000) * 19.2)
+        Wait((60 * 1000) * 19.2)
     end
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local housePlants = exports.oxmysql:executeSync('SELECT * FROM house_plants', {})
         for k, v in pairs(housePlants) do
@@ -102,7 +100,7 @@ Citizen.CreateThread(function()
             end
         end
         TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
-        Citizen.Wait((60 * 1000) * 9.6)
+        Wait((60 * 1000) * 9.6)
     end
 end)
 
@@ -147,8 +145,7 @@ AddEventHandler('qb-weed:server:removeSeed', function(itemslot, seed)
     Player.Functions.RemoveItem(seed, 1, itemslot)
 end)
 
-RegisterServerEvent('qb-weed:server:harvestPlant')
-AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName, plantId)
+RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantName, plantId)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
@@ -181,8 +178,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, amount, plantName
     end
 end)
 
-RegisterServerEvent('qb-weed:server:foodPlant')
-AddEventHandler('qb-weed:server:foodPlant', function(house, amount, plantName, plantId)
+RegisterNetEvent('qb-weed:server:foodPlant', function(house, amount, plantName, plantId)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local plantStats = exports.oxmysql:executeSync(
