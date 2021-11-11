@@ -18,8 +18,7 @@ DrawText3Ds = function(x, y, z, text)
     ClearDrawOrigin()
 end
 
-RegisterNetEvent('qb-weed:client:getHousePlants')
-AddEventHandler('qb-weed:client:getHousePlants', function(house)
+RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
     QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
         currentHouse = house
         housePlants[currentHouse] = plants
@@ -29,7 +28,7 @@ AddEventHandler('qb-weed:client:getHousePlants', function(house)
 end)
 
 function spawnHousePlants()
-    Citizen.CreateThread(function()
+    CreateThread(function()
         if not plantSpawned then
             for k, v in pairs(housePlants[currentHouse]) do
                 local plantData = {
@@ -50,7 +49,7 @@ function spawnHousePlants()
 end
 
 function despawnHousePlants()
-    Citizen.CreateThread(function()
+    CreateThread(function()
         if plantSpawned then
             for k, v in pairs(housePlants[currentHouse]) do
                 local plantData = {
@@ -71,9 +70,9 @@ end
 
 local ClosestTarget = 0
 
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
-        Citizen.Wait(0)
+        Wait(0)
         if insideHouse then
             if plantSpawned then
                 local ped = PlayerPedId()
@@ -162,13 +161,12 @@ Citizen.CreateThread(function()
         end
 
         if not insideHouse then
-            Citizen.Wait(5000)
+            Wait(5000)
         end
     end
 end)
 
-RegisterNetEvent('qb-weed:client:leaveHouse')
-AddEventHandler('qb-weed:client:leaveHouse', function()
+RegisterNetEvent('qb-weed:client:leaveHouse', function()
     despawnHousePlants()
     SetTimeout(1000, function()
         if currentHouse ~= nil then
@@ -179,8 +177,7 @@ AddEventHandler('qb-weed:client:leaveHouse', function()
     end)
 end)
 
-RegisterNetEvent('qb-weed:client:refreshHousePlants')
-AddEventHandler('qb-weed:client:refreshHousePlants', function(house)
+RegisterNetEvent('qb-weed:client:refreshHousePlants', function(house)
     if currentHouse ~= nil and currentHouse == house then
         despawnHousePlants()
         SetTimeout(500, function()
@@ -193,8 +190,7 @@ AddEventHandler('qb-weed:client:refreshHousePlants', function(house)
     end
 end)
 
-RegisterNetEvent('qb-weed:client:refreshPlantStats')
-AddEventHandler('qb-weed:client:refreshPlantStats', function()
+RegisterNetEvent('qb-weed:client:refreshPlantStats', function()
     if insideHouse then
         despawnHousePlants()
         SetTimeout(500, function()
@@ -209,12 +205,11 @@ end)
 function loadAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do
         RequestAnimDict(dict)
-        Citizen.Wait(100)
+        Wait(100)
     end
 end
 
-RegisterNetEvent('qb-weed:client:placePlant')
-AddEventHandler('qb-weed:client:placePlant', function(type, item)
+RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
     local ped = PlayerPedId()
     local plyCoords = GetOffsetFromEntityInWorldCoords(ped, 0, 0.75, 0)
     local plantData = {
@@ -256,8 +251,7 @@ AddEventHandler('qb-weed:client:placePlant', function(type, item)
     end
 end)
 
-RegisterNetEvent('qb-weed:client:foodPlant')
-AddEventHandler('qb-weed:client:foodPlant', function(item)
+RegisterNetEvent('qb-weed:client:foodPlant', function(item)
     local plantData = {}
     if currentHouse ~= nil then
         if ClosestTarget ~= 0 then
