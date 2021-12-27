@@ -1,6 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local housePlants = {}
-local insideHouse = false
+local insideHouse = true
 local currentHouse = nil
 
 DrawText3Ds = function(x, y, z, text)
