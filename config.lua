@@ -97,3 +97,13 @@ QBWeed.Props = {
     ["stage-f"] = "bkr_prop_weed_lrg_01b",
     ["stage-g"] = "bkr_prop_weed_lrg_01b",
 }
+
+QBWeed.PropOffsets = {
+    ["stage-a"] = 1,
+    ["stage-b"] = 1,
+    ["stage-c"] = 1,
+    ["stage-d"] = 3.5,
+    ["stage-e"] = 3.5,
+    ["stage-f"] = 3.5,
+    ["stage-g"] = 3.5,
+}
