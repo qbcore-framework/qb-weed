@@ -103,7 +103,7 @@ local function placeAction(ped, house, coords, sort, slot)
         TriggerServerEvent('qb-weed:server:placePlant', house, coords, sort, slot)
     end, function() -- Cancel
         ClearPedTasks(ped)
-        QBCore.Functions.Notify("Process Cancelled", "error")
+        QBCore.Functions.Notify("Process cancelled", "error")
     end)
 end
 local function fertilizeAction(ped, house, plant)
@@ -121,7 +121,7 @@ local function fertilizeAction(ped, house, plant)
         TriggerServerEvent('qb-weed:server:fertilizePlant', house, plant)
     end, function() -- Cancel
         ClearPedTasks(ped)
-        QBCore.Functions.Notify("Process Cancelled", "error")
+        QBCore.Functions.Notify("Process cancelled", "error")
     end)
 end
 local function harvestAction(ped, house, plant)
@@ -139,7 +139,7 @@ local function harvestAction(ped, house, plant)
         TriggerServerEvent('qb-weed:server:harvestPlant', house, plant)
     end, function() -- Cancel
         ClearPedTasks(ped)
-        QBCore.Functions.Notify("Process Cancelled", "error")
+        QBCore.Functions.Notify("Process cancelled", "error")
     end)
 end
 local function deathAction(ped, house, plant)
@@ -157,7 +157,7 @@ local function deathAction(ped, house, plant)
         TriggerServerEvent('qb-weed:server:removeDeadPlant', house, plant)
     end, function() -- Cancel
         ClearPedTasks(ped)
-        QBCore.Functions.Notify("Process Cancelled", "error")
+        QBCore.Functions.Notify("Process cancelled", "error")
     end)
 end
 
@@ -215,10 +215,10 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
         if closestPlant == 0 then
             placeAction(ped, currHouse, coords, sort, item.slot)
         else
-            QBCore.Functions.Notify("Can't Place Here", 'error', 3500)
+            QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
         end
     else
-        QBCore.Functions.Notify("It's Not Safe Here, try your house", 'error', 3500)
+        QBCore.Functions.Notify("It's not safe here, try your house", 'error', 3500)
     end
 end)
 
@@ -234,10 +234,10 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
             if plant.food < 100 then
                 fertilizeAction(ped, currHouse, plant)
             else
-                QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
+                QBCore.Functions.Notify('Plant is already fertilized', 'error', 3500)
             end
         else
-            QBCore.Functions.Notify("Must Be Near A Weed Plant", "error")
+            QBCore.Functions.Notify("Must be near a weed plant", "error")
         end
     end
 end)
