@@ -48,9 +48,7 @@ local function renderPlant(id)
     end
 end
 local function unrenderPlant(id)
-    Citizen.Trace("Called unrenderPlant for id: " .. tostring(id) .. "...\n")
     if (houseProps[id] ~= nil) then
-        Citizen.Trace("Deleting Object: " .. tostring(houseProps[id]) .. "...\n")
         DeleteObject(houseProps[id])
         houseProps[id] = nil
     end
@@ -89,8 +87,83 @@ local function updateHousePlants()
     end
 end
 
+-- Actions
+local function placeAction(ped, house, coords, sort, slot)
+    QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 8000, false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true,
+    }, {
+        animDict = "amb@world_human_gardener_plant@male@base",
+        anim = "base",
+        flags = 16,
+    }, {}, {}, function() -- Done
+        ClearPedTasks(ped)
+        TriggerServerEvent('qb-weed:server:placePlant', house, coords, sort, slot)
+    end, function() -- Cancel
+        ClearPedTasks(ped)
+        QBCore.Functions.Notify("Process Cancelled", "error")
+    end)
+end
+local function fertilizeAction(ped, house, plant)
+    QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", math.random(4000, 8000), false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true,
+    }, {
+        animDict = "timetable@gardener@filling_can",
+        anim = "gar_ig_5_filling_can",
+        flags = 16,
+    }, {}, {}, function() -- Done
+        ClearPedTasks(ped)
+        TriggerServerEvent('qb-weed:server:fertilizePlant', house, plant)
+    end, function() -- Cancel
+        ClearPedTasks(ped)
+        QBCore.Functions.Notify("Process Cancelled", "error")
+    end)
+end
+local function harvestAction(ped, house, plant)
+    QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 8000, false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true,
+    }, {
+        animDict = "amb@world_human_gardener_plant@male@base",
+        anim = "base",
+        flags = 16,
+    }, {}, {}, function() -- Done
+        ClearPedTasks(ped)
+        TriggerServerEvent('qb-weed:server:harvestPlant', house, plant)
+    end, function() -- Cancel
+        ClearPedTasks(ped)
+        QBCore.Functions.Notify("Process Cancelled", "error")
+    end)
+end
+local function deathAction(ped, house, plant)
+    QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 8000, false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true,
+    }, {
+        animDict = "amb@world_human_gardener_plant@male@base",
+        anim = "base",
+        flags = 16,
+    }, {}, {}, function() -- Done
+        ClearPedTasks(ped)
+        TriggerServerEvent('qb-weed:server:removeDeadPlant', house, plant)
+    end, function() -- Cancel
+        ClearPedTasks(ped)
+        QBCore.Functions.Notify("Process Cancelled", "error")
+    end)
+end
+
 -- Event triggered upon entrance to a house
-RegisterNetEvent('qb-weed:client:enterHouse', function(house)
+-- Should really be named enterHouse
+RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
     if not insideHouse() then
         currHouse = house
         updateHousePlants()
@@ -120,7 +193,6 @@ RegisterNetEvent('qb-weed:client:refreshPlantProp', function(id, newStage)
         housePlants[id].stage = newStage
         housePlants[id].progress = 0
         unrenderPlant(id)
-        Citizen.Wait(1200)
         renderPlant(id)
     end
 end)
@@ -130,33 +202,18 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
     if insideHouse() then
         local ped = PlayerPedId()
         local pedOffset = 0.75
-        local plantCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
+        local coords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
 
         -- Check if any plants are too close in proximity to new position
         local closestPlant = 0
         for name, prop in pairs(QBWeed.Props) do
             if closestPlant == 0 then
-                closestPlant = GetClosestObjectOfType(plantCoords.x, plantCoords.y, plantCoords.z, minProximity, GetHashKey(prop), false, false, false)
+                closestPlant = GetClosestObjectOfType(coords.x, coords.y, coords.z, minProximity, GetHashKey(prop), false, false, false)
             end
         end
 
         if closestPlant == 0 then
-            QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 8000, false, true, {
-                disableMovement = true,
-                disableCarMovement = true,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-                animDict = "amb@world_human_gardener_plant@male@base",
-                anim = "base",
-                flags = 16,
-            }, {}, {}, function() -- Done
-                ClearPedTasks(ped)
-                TriggerServerEvent('qb-weed:server:placePlant', currHouse, plantCoords, sort, item.slot)
-            end, function() -- Cancel
-                ClearPedTasks(ped)
-                QBCore.Functions.Notify("Process Cancelled", "error")
-            end)
+            placeAction(ped, currHouse, coords, sort, item.slot)
         else
             QBCore.Functions.Notify("Can't Place Here", 'error', 3500)
         end
@@ -167,35 +224,17 @@ end)
 
 -- Event triggered by the server when client attempts to fertilize a plant
 RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
-    Citizen.Trace("Called fertilizePlant...\n")
-    Citizen.Trace(tostring(closestPlantId) .. "\n")
     if (insideHouse() and closestPlantId ~= 0) then
         local ped = PlayerPedId()
         local plant = housePlants[closestPlantId]
         local coords = json.decode(plant.coords)
         local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
-        Citizen.Trace("plyDist to id" .. tostring(closestPlantId) .. " is " .. tostring(plyDistance) .. "\n")
 
         if plyDistance < minProximity + 0.2 then
-            if plant.food == 100 then
-                QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
+            if plant.food < 100 then
+                fertilizeAction(ped, currHouse, plant)
             else
-                QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", math.random(4000, 8000), false, true, {
-                    disableMovement = true,
-                    disableCarMovement = true,
-                    disableMouse = false,
-                    disableCombat = true,
-                }, {
-                    animDict = "timetable@gardener@filling_can",
-                    anim = "gar_ig_5_filling_can",
-                    flags = 16,
-                }, {}, {}, function() -- Done
-                    ClearPedTasks(ped)
-                    TriggerServerEvent('qb-weed:server:fertilizePlant', currHouse, plant)
-                end, function() -- Cancel
-                    ClearPedTasks(ped)
-                    QBCore.Functions.Notify("Process Cancelled", "error")
-                end)
+                QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
             end
         else
             QBCore.Functions.Notify("Must Be Near A Weed Plant", "error")
@@ -205,7 +244,6 @@ end)
 
 -- Event triggered by the server when it has to remove a plant
 RegisterNetEvent('qb-weed:client:removePlant', function(id)
-    Citizen.Trace("Called removePlant...\n")
     if insideHouse() then
         unrenderPlant(id)
         housePlants[id] = nil
@@ -226,58 +264,27 @@ Citizen.CreateThread(function()
                 local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
                 if plant ~= nil and plyDistance < minProximity then
-                    -- Useful for fertilizing plants later
                     closestPlantId = id
                     -- Plant is alive
                     if plant.health > 0 then
-                        -- Plant is fully grown
+                        DrawText3Ds(coords.x, coords.y, coords.z,
+                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Nutrition: ~b~'..plant.food..'% ~w~ | Health: ~b~'..plant.health..'%')
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then
                             DrawText3Ds(coords.x, coords.y, coords.z + 0.2, "Press ~g~ E ~w~ to harvest plant.")
-                            DrawText3Ds(coords.x, coords.y, coords.z,
-                                'Sort: ~g~'..label..'~w~ ['..gender..'] | Nutrition: ~b~'..plant.food..'% ~w~ | Health: ~b~'..plant.health..'%')
                             if IsControlJustPressed(0, 38) then
-                                QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 8000, false, true, {
-                                    disableMovement = true,
-                                    disableCarMovement = true,
-                                    disableMouse = false,
-                                    disableCombat = true,
-                                }, {
-                                    animDict = "amb@world_human_gardener_plant@male@base",
-                                    anim = "base",
-                                    flags = 16,
-                                }, {}, {}, function() -- Done
-                                    ClearPedTasks(ped)
-                                    TriggerServerEvent('qb-weed:server:harvestPlant', currHouse, plant)
-                                end, function() -- Cancel
-                                    ClearPedTasks(ped)
-                                    QBCore.Functions.Notify("Process Cancelled", "error")
-                                end)
+                                harvestAction(ped, currHouse, plant)
                             end
-                        -- Plant is still growing
                         else
-                            DrawText3Ds(coords.x, coords.y, coords.z,
-                                'Sort: '..label..'~w~ ['..gender..'] | Nutrition: ~b~'..plant.food..'% ~w~ | Health: ~b~'..plant.health..'%')
+                            DrawText3Ds(coords.x, coords.y, coords.z + 0.2, "Trapped? Press ~g~ E ~w~ to remove plant.")
+                            if IsControlJustPressed(0, 38) then
+                                deathAction(ped, currHouse, plant)
+                            end
                         end
                     -- Plant is dead
                     else
                         DrawText3Ds(coords.x, coords.y, coords.z, 'The plant has died. Press ~r~ E ~w~ to remove plant.')
                         if IsControlJustPressed(0, 38) then
-                            QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 8000, false, true, {
-                                disableMovement = true,
-                                disableCarMovement = true,
-                                disableMouse = false,
-                                disableCombat = true,
-                            }, {
-                                animDict = "amb@world_human_gardener_plant@male@base",
-                                anim = "base",
-                                flags = 16,
-                            }, {}, {}, function() -- Done
-                                ClearPedTasks(ped)
-                                TriggerServerEvent('qb-weed:server:removeDeadPlant', currHouse, plant)
-                            end, function() -- Cancel
-                                ClearPedTasks(ped)
-                                QBCore.Functions.Notify("Process Cancelled", "error")
-                            end)
+                            deathAction(ped, currHouse, plant)
                         end
                     end
                 end

@@ -65,17 +65,22 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, plant)
                 Player.Functions.AddItem('weed_' .. plant.sort .. '_seed', seedAmount)
                 Player.Functions.AddItem('weed_' .. plant.sort, weedAmount)
                 Player.Functions.RemoveItem('empty_weed_bag', weedAmount)
-                exports.oxmysql:execute('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house})
-                TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
-                TriggerClientEvent('QBCore:Notify', source, 'The plant has been harvested', 'success', 3500)
+
+                exports.oxmysql:execute('DELETE FROM house_plants WHERE id = ? AND building = ?',
+                    {plant.id, house}, function(res)
+                        TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
+                    end)
+                -- Doesn't work for some reason
+                -- TriggerClientEvent('QBCore:Notify', source,
+                --   QBWeed.Plants[plant.sort]["label"] .. ' | Harvested ' .. tostring(weedAmount) .. ' bags, ' .. tostring(seedAmount) .. ' seeds', 'success', 3500)
             else
                 TriggerClientEvent('QBCore:Notify', source, 'This plant no longer exists?', 'error', 3500)
             end
         else
-            TriggerClientEvent('QBCore:Notify', source, "You Don't Have Enough Resealable Bags", 'error', 3500)
+            TriggerClientEvent('QBCore:Notify', source, "You don't have enough bags...", 'error', 3500)
         end
     else
-        TriggerClientEvent('QBCore:Notify', source, 'House Not Found', 'error', 3500)
+        TriggerClientEvent('QBCore:Notify', source, 'House not found', 'error', 3500)
     end
 end)
 
