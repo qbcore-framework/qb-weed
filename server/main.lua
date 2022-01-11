@@ -3,7 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(source, cb, building)
     local buildingPlants = {}
 
-    MySQL.Sync.fetchAll('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
+    MySQL.Async.fetchAll('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
         for i = 1, #plants, 1 do
             buildingPlants[#buildingPlants+1] = plants[i]
         end
