@@ -201,7 +201,7 @@ end)
 RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
     if (insideHouse() and closestPlantId ~= 0) then
         local ped = PlayerPedId()
-        local pedOffset = 0.75
+        local pedOffset = minProximity/2
         local placeCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
         local closestPlant = housePlants[closestPlantId]
         local closestCoords = json.decode(closestPlant.coords)
