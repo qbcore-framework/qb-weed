@@ -1,4 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
+local statsTime = (60 * 1000) * 19.2 
+local growthTime = (60 * 1000) * 9.6
 
 -- Serves one plant for given building to client
 QBCore.Functions.CreateCallback('qb-weed:server:getHousePlant', function(source, callback, house, id)
@@ -38,16 +40,15 @@ AddEventHandler('qb-weed:server:fertilizePlant', function(house, plant)
     local Player = QBCore.Functions.GetPlayer(src)
     local amount = math.random(40, 60)
     local newFood = math.min(plant.food + amount, 100)
-    TriggerClientEvent('QBCore:Notify', src,
-        QBWeed.Plants[plant.sort]["label"] .. ' | Nutrition: ' .. plant.food .. '% + ' .. amount .. '% (' ..
-            newFood .. '%)', 'success', 3500)
     
     exports.oxmysql:update('UPDATE house_plants SET food = ? WHERE building = ? AND id = ?',
         {newFood, house, plant.id}, function(res)
             TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, plant.id, newFood, plant.health)
+            TriggerClientEvent('QBCore:Notify', src,
+                QBWeed.Plants[plant.sort]["label"] .. ' | Nutrition: ' .. plant.food .. '% + ' .. amount .. '% (' ..
+                newFood .. '%)', 'success', 3500)
+            Player.Functions.RemoveItem('weed_nutrition', 1)
         end)
-
-    Player.Functions.RemoveItem('weed_nutrition', 1)
 end)
 
 -- Removes plant, gives player seeds & weed, removes weed bags
@@ -68,7 +69,6 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, plant)
                 Player.Functions.RemoveItem('empty_weed_bag', weedAmount)
                 exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house})
                 TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
-                -- Doesn't work for some reason
                 TriggerClientEvent('QBCore:Notify', src,
                     QBWeed.Plants[plant.sort]["label"] .. ' | Harvested ' .. weedAmount .. ' bags, ' .. seedAmount .. ' seeds', 'success', 3500)
             end
@@ -102,7 +102,7 @@ Citizen.CreateThread(function()
             end
         end)
 
-        Citizen.Wait((60 * 1000) * 19.2)
+        Citizen.Wait(statsTime)
     end
 end)
 
@@ -141,7 +141,7 @@ Citizen.CreateThread(function()
                 end
             end
         end)
-        Citizen.Wait((60 * 1000) * 9.6)
+        Citizen.Wait(growthTime)
     end
 end)
 

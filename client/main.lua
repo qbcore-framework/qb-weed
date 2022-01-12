@@ -3,7 +3,7 @@ local currHouse = nil
 local closestPlantId = 0
 local housePlants = {}
 local houseProps = {}
-local minProximity = 0.8
+local minProximity = 1.2
 
 DrawText3Ds = function(x, y, z, text)
     SetTextScale(0.35, 0.35)
@@ -199,21 +199,16 @@ end)
 
 -- Event triggered by the server when client attempt to place a plant
 RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
-    if insideHouse() then
+    if (insideHouse() and closestPlantId ~= 0) then
         local ped = PlayerPedId()
         local pedOffset = 0.75
-        local coords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
+        local placeCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
+        local closestPlant = housePlants[closestPlantId]
+        local closestCoords = json.decode(closestPlant.coords)
+        local plyDistance = #(vector3(placeCoords.x, placeCoords.y, placeCoords.z) - vector3(closestCoords.x, closestCoords.y, closestCoords.z))
 
-        -- Check if any plants are too close in proximity to new position
-        local closestPlant = 0
-        for name, prop in pairs(QBWeed.Props) do
-            if closestPlant == 0 then
-                closestPlant = GetClosestObjectOfType(coords.x, coords.y, coords.z, minProximity, GetHashKey(prop), false, false, false)
-            end
-        end
-
-        if closestPlant == 0 then
-            placeAction(ped, currHouse, coords, sort, item.slot)
+        if plyDistance > minProximity then
+            placeAction(ped, currHouse, placeCoords, sort, item.slot)
         else
             QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
         end
@@ -230,11 +225,13 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
         local coords = json.decode(plant.coords)
         local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
-        if plyDistance < minProximity + 0.2 then
-            if plant.food < 100 then
-                fertilizeAction(ped, currHouse, plant)
-            else
+        if plyDistance < minProximity/2 then
+            if plant.health <= 0 then
+                QBCore.Functions.Notify('Can\'t fertilize a dead plant', 'error', 3500)
+            elseif plant.food >= 100 then
                 QBCore.Functions.Notify('Plant is already fertilized', 'error', 3500)
+            else
+                fertilizeAction(ped, currHouse, plant)
             end
         else
             QBCore.Functions.Notify("Must be near a weed plant", "error")
@@ -263,26 +260,40 @@ Citizen.CreateThread(function()
                 local label = QBWeed.Plants[plant.sort]["label"]
                 local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
+                -- Plant stats
                 if plant ~= nil and plyDistance < minProximity then
                     closestPlantId = id
-                    -- Plant is alive
+                    local foodColor = "b"
+                    if plant.food < 50 then nutritionColor = "r" end
+                    local healthColor = "b"
+                    if plant.health < 50 then healthColor = "r" end
+
                     if plant.health > 0 then
                         DrawText3Ds(coords.x, coords.y, coords.z,
-                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Nutrition: ~b~'..plant.food..'% ~w~ | Health: ~b~'..plant.health..'%')
+                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Nutrition: ~' ..foodColor..'~'..plant.food..'% ~w~ | Health: ~'..healthColor..'~'..plant.health..'%')
+                    else
+                        DrawText3Ds(coords.x, coords.y, coords.z,
+                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Health: ~'..healthColor..'~'..plant.health..'%')
+                    end
+                end
+
+                -- Plant Actions
+                local actionMsgOffset = 0.1
+                if plant ~= nil and plyDistance < minProximity/2 then
+                    if plant.health > 0 then
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then
-                            DrawText3Ds(coords.x, coords.y, coords.z + 0.2, "Press ~g~ E ~w~ to harvest plant.")
+                            DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, "Press ~g~ E ~w~ to harvest plant.")
                             if IsControlJustPressed(0, 38) then
                                 harvestAction(ped, currHouse, plant)
                             end
                         else
-                            DrawText3Ds(coords.x, coords.y, coords.z + 0.2, "Trapped? Press ~g~ E ~w~ to remove plant.")
+                            DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, "Trapped? Press ~r~ E ~w~ to remove plant.")
                             if IsControlJustPressed(0, 38) then
                                 deathAction(ped, currHouse, plant)
                             end
                         end
-                    -- Plant is dead
-                    else
-                        DrawText3Ds(coords.x, coords.y, coords.z, 'The plant has died. Press ~r~ E ~w~ to remove plant.')
+                    else 
+                        DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, 'This plant is dead. Press ~r~ E ~w~ to remove plant.')
                         if IsControlJustPressed(0, 38) then
                             deathAction(ped, currHouse, plant)
                         end
