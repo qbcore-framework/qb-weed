@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS `house_plants` (
   `health` int(11) DEFAULT 100,
   `progress` int(11) DEFAULT 0,
   `coords` text DEFAULT NULL,
-  `plantid` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `building` (`building`),
   KEY `plantid` (`plantid`)

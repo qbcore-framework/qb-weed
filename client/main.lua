@@ -3,7 +3,6 @@ local currHouse = nil
 local closestPlantId = 0
 local housePlants = {}
 local houseProps = {}
-local minProximity = 1.2
 
 DrawText3Ds = function(x, y, z, text)
     SetTextScale(0.35, 0.35)
@@ -30,6 +29,10 @@ end
 -- Helper functions
 local function insideHouse()
     return (currHouse ~= nil)
+end
+
+local function hasEnoughWeedBags(gender, amount)
+    return (amount >= QBWeed.Harvest[gender]["Bags"]["Max"])
 end
 
 local function renderPlant(id)
@@ -93,7 +96,7 @@ end
 
 -- Actions
 local function placeAction(ped, house, coords, sort, slot)
-    QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 5000, false, true, {
+    QBCore.Functions.Progressbar("plant_weed_plant", "Planting", QBWeed.ActionTime, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -111,7 +114,7 @@ local function placeAction(ped, house, coords, sort, slot)
     end)
 end
 local function fertilizeAction(ped, house, plant)
-    QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", 5000, false, true, {
+    QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", QBWeed.ActionTime, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -129,25 +132,31 @@ local function fertilizeAction(ped, house, plant)
     end)
 end
 local function harvestAction(ped, house, plant)
-    QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 10000, false, true, {
-        disableMovement = true,
-        disableCarMovement = true,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-        animDict = "amb@world_human_gardener_plant@male@base",
-        anim = "base",
-        flags = 16,
-    }, {}, {}, function() -- Done
-        ClearPedTasks(ped)
-        TriggerServerEvent('qb-weed:server:harvestPlant', house, plant)
-    end, function() -- Cancel
-        ClearPedTasks(ped)
-        QBCore.Functions.Notify("Process cancelled", "error")
+    QBCore.Functions.TriggerCallback('qb-weed:server:getWeedBagAmount', function(weedBagAmount)
+        if hasEnoughWeedBags(plant.gender, weedBagAmount) then
+            QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", QBWeed.HarvestTime, false, true, {
+                disableMovement = true,
+                disableCarMovement = true,
+                disableMouse = false,
+                disableCombat = true,
+            }, {
+                animDict = "amb@world_human_gardener_plant@male@base",
+                anim = "base",
+                flags = 16,
+            }, {}, {}, function() -- Done
+                ClearPedTasks(ped)
+                TriggerServerEvent('qb-weed:server:harvestPlant', house, plant)
+            end, function() -- Cancel
+                ClearPedTasks(ped)
+                QBCore.Functions.Notify("Process cancelled", "error")
+            end)
+        else
+            QBCore.Functions.Notify("Not enough empty weed bags", "error", 3500)
+        end
     end)
 end
 local function deathAction(ped, house, plant)
-    QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 5000, false, true, {
+    QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", QBWeed.ActionTime, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -158,7 +167,7 @@ local function deathAction(ped, house, plant)
         flags = 16,
     }, {}, {}, function() -- Done
         ClearPedTasks(ped)
-        TriggerServerEvent('qb-weed:server:removeDeadPlant', house, plant)
+        TriggerServerEvent('qb-weed:server:removePlant', house, plant)
     end, function() -- Cancel
         ClearPedTasks(ped)
         QBCore.Functions.Notify("Process cancelled", "error")
@@ -184,20 +193,26 @@ end)
 
 -- Event triggered by the server when a single plant is fertilized
 RegisterNetEvent('qb-weed:client:refreshPlantStats', function (id, food, health)
-    if housePlants[id] == nil then
-        updateHousePlant(id)
-    else
-        housePlants[id].food = food
-        housePlants[id].health = health
+    if insideHouse() then
+        if housePlants[id] == nil then
+            updateHousePlant(id)
+        else
+            housePlants[id].food = food
+            housePlants[id].health = health
+        end
     end
 end)
 -- Event triggered by the server to refresh model after stage update, manually maintains state of houseProps
 RegisterNetEvent('qb-weed:client:refreshPlantProp', function(id, newStage)
     if insideHouse() then
-        housePlants[id].stage = newStage
-        housePlants[id].progress = 0
-        unrenderPlant(id)
-        renderPlant(id)
+        if housePlants[id] == nil then
+            updateHousePlant(id)
+        else
+            housePlants[id].stage = newStage
+            housePlants[id].progress = 0
+            unrenderPlant(id)
+            renderPlant(id)
+        end
     end
 end)
 
@@ -205,7 +220,7 @@ end)
 RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
     if (insideHouse()) then
         local ped = PlayerPedId()
-        local pedOffset = minProximity/2
+        local pedOffset = QBWeed.MinProximity/2
         local placeCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
         
         local canPlace = true
@@ -213,7 +228,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
             local closestPlant = housePlants[closestPlantId]
             local closestCoords = json.decode(closestPlant.coords)
             local plyDistance = #(vector3(placeCoords.x, placeCoords.y, placeCoords.z) - vector3(closestCoords.x, closestCoords.y, closestCoords.z))
-            if plyDistance <= minProximity then
+            if plyDistance <= QBWeed.MinProximity then
                 canPlace = false
                 QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
             end
@@ -273,12 +288,12 @@ Citizen.CreateThread(function()
                 local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
                 -- Plant stats
-                if plant ~= nil and plyDistance < minProximity then
+                if plant ~= nil and plyDistance < QBWeed.MinProximity then
                     closestPlantId = id
                     local foodColor = "b"
-                    if plant.food <= 50 then foodColor = "r" end
+                    if plant.food <= QBWeed.MinimumFood then foodColor = "r" end
                     local healthColor = "b"
-                    if plant.health <= 40 then healthColor = "r" end
+                    if plant.health <= QBWeed.MinimumHealth then healthColor = "r" end
 
                     if plant.health > 0 then
                         DrawText3Ds(coords.x, coords.y, coords.z,
@@ -291,7 +306,7 @@ Citizen.CreateThread(function()
 
                 -- Plant Actions
                 local actionMsgOffset = 0.15
-                if plant ~= nil and plyDistance < minProximity/2 then
+                if plant ~= nil and plyDistance < 0.64 then
                     if plant.health > 0 then
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then
                             DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, "Press ~g~ E ~w~ to harvest plant.")

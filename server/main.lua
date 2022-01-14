@@ -14,21 +14,29 @@ QBCore.Functions.CreateCallback('qb-weed:server:getHousePlants', function(source
     end)
 end)
 
+-- Returns to the client the number of weed bags the client has
+QBCore.Functions.CreateCallback('qb-weed:server:getWeedBagAmount', function(source, callback)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
+    local amount = weedBag ~= nil and weedBag.amount or 0
+    callback(amount)
+end)
+
 -- Places a new plant, tells client to render it, removes seed
 RegisterServerEvent('qb-weed:server:placePlant')
 AddEventHandler('qb-weed:server:placePlant', function(house, coords, sort, seedSlot)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local gender = math.random(0, 1) == 1 and "F" or "M"
+    local gender = ((math.random()*100) <= QBWeed.ChanceOfFemale) and "F" or "M"
 
     exports.oxmysql:insert('INSERT INTO house_plants (building, coords, gender, sort) VALUES (?, ?, ?, ?)',
         {house, json.encode(coords), gender, sort}, function(insertId)
             if insertId ~= 0 then
+                Player.Functions.RemoveItem(sort, 1, seedSlot)
                 TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, insertId, 100, 100)
             end
         end)
-
-    Player.Functions.RemoveItem(sort, 1, seedSlot)
 end)
 
 -- Fertilizes plant, removes weed_nutrition
@@ -36,7 +44,7 @@ RegisterServerEvent('qb-weed:server:fertilizePlant')
 AddEventHandler('qb-weed:server:fertilizePlant', function(house, plant)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local amount = math.random(40, 60)
+    local amount = math.random(QBWeed.Fertilizer["Min"], QBWeed.Fertilizer["Max"])
     local newFood = math.min(plant.food + amount, 100)
     
     exports.oxmysql:query('UPDATE house_plants SET food = ? WHERE building = ? AND id = ?',
@@ -56,31 +64,26 @@ RegisterServerEvent('qb-weed:server:harvestPlant')
 AddEventHandler('qb-weed:server:harvestPlant', function(house, plant)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
-    local weedAmount = plant.gender == "F" and 15 or 18
-    local seedAmount = plant.gender == "F" and math.random(2, 3) or 1
-    local seedText = plant.gender == "M" and "seed" or "seeds"
+    local weedAmount = math.random(QBWeed.Harvest[plant.gender]["Bags"]["Min"], QBWeed.Harvest[plant.gender]["Bags"]["Max"])
+    local seedAmount = math.random(QBWeed.Harvest[plant.gender]["Seeds"]["Min"], QBWeed.Harvest[plant.gender]["Seeds"]["Max"])
+    local seedText = seedAmount == 1 and "seed" or "seeds"
     
-    if (weedBag ~= nil and weedBag.amount >= weedAmount) then
-        exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?',
-            {plant.id, house}, function(res)
-                if res["affectedRows"] == 1 then
-                    Player.Functions.AddItem('weed_' .. plant.sort .. '_seed', seedAmount)
-                    Player.Functions.AddItem('weed_' .. plant.sort, weedAmount)
-                    Player.Functions.RemoveItem('empty_weed_bag', weedAmount)
-                    TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
-                    TriggerClientEvent('QBCore:Notify', src,
-                        QBWeed.Plants[plant.sort]["label"] .. ' | Harvested ' .. weedAmount .. ' bags, ' .. seedAmount .. ' ' .. seedText, 'success', 3500)
-                end
-            end)
-    else
-        TriggerClientEvent('QBCore:Notify', src, "You don't have enough bags", 'error', 3500)
-    end
+    exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?',
+        {plant.id, house}, function(res)
+            if res["affectedRows"] == 1 then
+                Player.Functions.AddItem('weed_' .. plant.sort .. '_seed', seedAmount)
+                Player.Functions.AddItem('weed_' .. plant.sort, weedAmount)
+                Player.Functions.RemoveItem('empty_weed_bag', weedAmount)
+                TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
+                TriggerClientEvent('QBCore:Notify', src,
+                    QBWeed.Plants[plant.sort]["label"] .. ' | Harvested ' .. weedAmount .. ' bags, ' .. seedAmount .. ' ' .. seedText, 'success', 3500)
+            end
+        end)
 end)
 
 -- Removes a dead plant
-RegisterServerEvent('qb-weed:server:removeDeadPlant')
-AddEventHandler('qb-weed:server:removeDeadPlant', function(house, plant)
+RegisterServerEvent('qb-weed:server:removePlant')
+AddEventHandler('qb-weed:server:removePlant', function(house, plant)
     exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house}, function(res)
         if res["affectedRows"] == 1 then
             TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
@@ -108,7 +111,7 @@ Citizen.CreateThread(function()
             end
         end)
 
-        Citizen.Wait(QBWeed.StatsTime)
+        Citizen.Wait(QBWeed.StatsTickTime)
     end
 end)
 
@@ -118,8 +121,7 @@ Citizen.CreateThread(function()
         exports.oxmysql:query('SELECT * FROM house_plants', {}, function(housePlants)
             for _, plant in pairs(housePlants) do
                 if plant.health > QBWeed.MinimumHealth and plant.stage ~= QBWeed.Plants[plant.sort]["highestStage"] then
-                    local newProgress = plant.progress + math.random(1, 3)
-                    local oldStage = plant.stage
+                    local newProgress = plant.progress + math.random(QBWeed.Progress["Min"], QBWeed.Progress["Max"])
                     local newStage = plant.stage
 
                     if newProgress >= 100 then
@@ -138,17 +140,17 @@ Citizen.CreateThread(function()
                             newStage = "stage-g"
                         end
                     end
-
+                    
                     exports.oxmysql:update('UPDATE house_plants SET stage = ?, progress = ? WHERE id = ?',
-                        {newStage, 0, plant.id}, function(res)
+                        {newStage, newProgress, plant.id}, function(res)
                             if res == 1 then
-                                TriggerClientEvent('qb-weed:client:refreshPlantProp', -1, plant.id, newStage, 0)
+                                TriggerClientEvent('qb-weed:client:refreshPlantProp', -1, plant.id, newStage, newProgress)
                             end
                         end)
                 end
             end
         end)
-        Citizen.Wait(QBWeed.GrowthTime)
+        Citizen.Wait(QBWeed.GrowthTickTime)
     end
 end)
 

@@ -1,10 +1,49 @@
 QBWeed = {}
-QBWeed.HarvestTime = 40 * 1000
-QBWeed.GrowthTime = 9.6 * (1 * 1000)
-QBWeed.StatsTime = 19.2 * (1 * 1000)
 
-QBWeed.MinimumHealth = 40
-QBWeed.MinimumFood = 50
+QBWeed.GrowthTickTime = 9.6 * (60 * 1000) -- Controls when progress tick happens
+QBWeed.StatsTickTime = 19.2 * (60 * 1000) -- Controls when food ticks down & health ticks up or down
+
+QBWeed.ActionTime = 5 * 1000    -- Controls how long every action but harvesting takes
+QBWeed.HarvestTime = 12 * 1000  -- Controls how long harvesting takes
+
+QBWeed.MinimumHealth = 40       -- No progress will be made below this health
+QBWeed.MinimumFood = 50         -- Plant will gain or lose health according to this amount
+QBWeed.ChanceOfFemale = 50      -- Chance of planting a female plant in percent
+QBWeed.MinProximity = 1.3       -- Minimum distance plants can be planted from one another
+QBWeed.ActionDistance = 0.64    -- Distance from plant to enable action
+
+QBWeed.Fertilizer = {
+    ["Min"] = 40,
+    ["Max"] = 60,
+}
+
+QBWeed.Progress = {
+    ["Min"] = 1,
+    ["Max"] = 3,
+}
+
+QBWeed.Harvest = {
+    ["M"] = {
+        ["Bags"] = {
+            ["Min"] = 18,
+            ["Max"] = 18,
+        },
+        ["Seeds"] = {
+            ["Min"] = 1,
+            ["Max"] = 1,
+        },
+    },
+    ["F"] = {
+        ["Bags"] = {
+            ["Min"] = 15,
+            ["Max"] = 15,
+        },
+        ["Seeds"] = {
+            ["Min"] = 2,
+            ["Max"] = 3,
+        },
+    },
+}
 
 QBWeed.Plants = {
     ["og-kush"] = {
