@@ -73,23 +73,27 @@ end
 local function updateHousePlant(id)
     if insideHouse() then
         QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlant', function(plant)
-            populateHousePlants(plant)
-            renderPlant(id)
+            if next(plant) ~= nil then
+                populateHousePlants(plant)
+                renderPlant(id)
+            end
         end, currHouse, id)
     end
 end
 local function updateHousePlants()
     if insideHouse() then
         QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlants', function(plants)
-            populateHousePlants(plants)
-            renderPlants()
+            if next(plants) ~= nil then
+                populateHousePlants(plants)
+                renderPlants()
+            end
         end, currHouse)
     end
 end
 
 -- Actions
 local function placeAction(ped, house, coords, sort, slot)
-    QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 8000, false, true, {
+    QBCore.Functions.Progressbar("plant_weed_plant", "Planting", 5000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -107,7 +111,7 @@ local function placeAction(ped, house, coords, sort, slot)
     end)
 end
 local function fertilizeAction(ped, house, plant)
-    QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", math.random(4000, 8000), false, true, {
+    QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", 5000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -125,7 +129,7 @@ local function fertilizeAction(ped, house, plant)
     end)
 end
 local function harvestAction(ped, house, plant)
-    QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 8000, false, true, {
+    QBCore.Functions.Progressbar("remove_weed_plant", "Harvesting Plant", 10000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -143,7 +147,7 @@ local function harvestAction(ped, house, plant)
     end)
 end
 local function deathAction(ped, house, plant)
-    QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 8000, false, true, {
+    QBCore.Functions.Progressbar("remove_weed_plant", "Removing The Plant", 5000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -199,18 +203,24 @@ end)
 
 -- Event triggered by the server when client attempt to place a plant
 RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
-    if (insideHouse() and closestPlantId ~= 0) then
+    if (insideHouse()) then
         local ped = PlayerPedId()
         local pedOffset = minProximity/2
         local placeCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
-        local closestPlant = housePlants[closestPlantId]
-        local closestCoords = json.decode(closestPlant.coords)
-        local plyDistance = #(vector3(placeCoords.x, placeCoords.y, placeCoords.z) - vector3(closestCoords.x, closestCoords.y, closestCoords.z))
+        
+        local canPlace = true
+        if closestPlantId ~= 0 then
+            local closestPlant = housePlants[closestPlantId]
+            local closestCoords = json.decode(closestPlant.coords)
+            local plyDistance = #(vector3(placeCoords.x, placeCoords.y, placeCoords.z) - vector3(closestCoords.x, closestCoords.y, closestCoords.z))
+            if plyDistance <= minProximity then
+                canPlace = false
+                QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
+            end
+        end
 
-        if plyDistance > minProximity then
+        if canPlace then
             placeAction(ped, currHouse, placeCoords, sort, item.slot)
-        else
-            QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
         end
     else
         QBCore.Functions.Notify("It's not safe here, try your house", 'error', 3500)
@@ -253,9 +263,11 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         if insideHouse() then
             local ped = PlayerPedId()
+            if next(housePlants) == nil then
+                closestPlantId = 0
+            end
+
             for id, plant in pairs(housePlants) do
-                local gender = "M"
-                if plant.gender == "woman" then gender = "F" end
                 local coords = json.decode(plant.coords)
                 local label = QBWeed.Plants[plant.sort]["label"]
                 local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
@@ -264,21 +276,21 @@ Citizen.CreateThread(function()
                 if plant ~= nil and plyDistance < minProximity then
                     closestPlantId = id
                     local foodColor = "b"
-                    if plant.food < 50 then nutritionColor = "r" end
+                    if plant.food <= 50 then foodColor = "r" end
                     local healthColor = "b"
-                    if plant.health < 50 then healthColor = "r" end
+                    if plant.health <= 40 then healthColor = "r" end
 
                     if plant.health > 0 then
                         DrawText3Ds(coords.x, coords.y, coords.z,
-                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Nutrition: ~' ..foodColor..'~'..plant.food..'% ~w~ | Health: ~'..healthColor..'~'..plant.health..'%')
+                            'Sort: ~g~'..label..'~w~ ['..plant.gender..'] | Nutrition: ~' ..foodColor..'~'..plant.food..'% ~w~ | Health: ~'..healthColor..'~'..plant.health..'%')
                     else
                         DrawText3Ds(coords.x, coords.y, coords.z,
-                            'Sort: ~g~'..label..'~w~ ['..gender..'] | Health: ~'..healthColor..'~'..plant.health..'%')
+                            'Sort: ~g~'..label..'~w~ ['..plant.gender..'] | Health: ~'..healthColor..'~'..plant.health..'%')
                     end
                 end
 
                 -- Plant Actions
-                local actionMsgOffset = 0.1
+                local actionMsgOffset = 0.15
                 if plant ~= nil and plyDistance < minProximity/2 then
                     if plant.health > 0 then
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then

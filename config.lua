@@ -1,5 +1,10 @@
 QBWeed = {}
 QBWeed.HarvestTime = 40 * 1000
+QBWeed.GrowthTime = 9.6 * (1 * 1000)
+QBWeed.StatsTime = 19.2 * (1 * 1000)
+
+QBWeed.MinimumHealth = 40
+QBWeed.MinimumFood = 50
 
 QBWeed.Plants = {
     ["og-kush"] = {
