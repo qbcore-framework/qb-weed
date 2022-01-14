@@ -250,7 +250,7 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
         local coords = json.decode(plant.coords)
         local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
 
-        if plyDistance < minProximity/2 then
+        if plyDistance < QBWeed.ActionDistance then
             if plant.health <= 0 then
                 QBCore.Functions.Notify('Can\'t fertilize a dead plant', 'error', 3500)
             elseif plant.food >= 100 then
@@ -289,7 +289,6 @@ Citizen.CreateThread(function()
 
                 -- Plant stats
                 if plant ~= nil and plyDistance < QBWeed.MinProximity then
-                    closestPlantId = id
                     local foodColor = "b"
                     if plant.food <= QBWeed.MinimumFood then foodColor = "r" end
                     local healthColor = "b"
@@ -306,7 +305,8 @@ Citizen.CreateThread(function()
 
                 -- Plant Actions
                 local actionMsgOffset = 0.15
-                if plant ~= nil and plyDistance < 0.64 then
+                if plant ~= nil and plyDistance <= QBWeed.ActionDistance then
+                    closestPlantId = id
                     if plant.health > 0 then
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then
                             DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, "Press ~g~ E ~w~ to harvest plant.")
