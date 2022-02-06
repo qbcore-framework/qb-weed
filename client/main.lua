@@ -1,6 +1,4 @@
-local QBCore = exports['qb-core']:GetCoreObject()
 local currHouse = nil
-local closestPlantId = 0
 local housePlants = {}
 local houseProps = {}
 
@@ -33,6 +31,23 @@ end
 
 local function hasEnoughWeedBags(gender, amount)
     return (amount >= QBWeed.Harvest[gender]["Bags"]["Max"])
+end
+
+local function getClosestPlantId(x, y, z)
+    local closestPlantId = 0
+    local closestDistance = 10000
+
+    for id, plant in pairs(housePlants) do
+        local coords = json.decode(plant.coords)
+        local plyDistance = #(vector3(x, y, z) - vector3(coords.x, coords.y, coords.z))
+        if plyDistance < closestDistance then
+            closestPlantId = id
+            closestDistance = plyDistance
+        end
+    end
+    print("Id: " .. tostring(closestPlantId) .. " Dist: " .. tostring(closestDistance))
+
+    return closestPlantId, closestDistance
 end
 
 local function renderPlant(id)
@@ -224,17 +239,11 @@ RegisterNetEvent('qb-weed:client:placePlant', function(sort, item)
         local placeCoords = GetOffsetFromEntityInWorldCoords(ped, 0, pedOffset, 0)
         
         local canPlace = true
-        if closestPlantId ~= 0 then
-            local closestPlant = housePlants[closestPlantId]
-            local closestCoords = json.decode(closestPlant.coords)
-            local plyDistance = #(vector3(placeCoords.x, placeCoords.y, placeCoords.z) - vector3(closestCoords.x, closestCoords.y, closestCoords.z))
-            if plyDistance <= QBWeed.MinProximity then
-                canPlace = false
-                QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
-            end
-        end
+        local closestPlantId, distance = getClosestPlantId(placeCoords.x, placeCoords.y, placeCoords.z)
 
-        if canPlace then
+        if closestPlantId ~= 0 and distance < QBWeed.MinProximity then
+            QBCore.Functions.Notify("Too close to another plant", 'error', 3500)
+        else
             placeAction(ped, currHouse, placeCoords, sort, item.slot)
         end
     else
@@ -244,13 +253,16 @@ end)
 
 -- Event triggered by the server when client attempts to fertilize a plant
 RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
-    if (insideHouse() and closestPlantId ~= 0) then
+    if (insideHouse()) then
         local ped = PlayerPedId()
-        local plant = housePlants[closestPlantId]
-        local coords = json.decode(plant.coords)
-        local plyDistance = #(GetEntityCoords(ped) - vector3(coords.x, coords.y, coords.z))
+        local coords = GetEntityCoords(ped)
+        
+        local canFertilize = true
+        local closestPlantId, distance = getClosestPlantId(coords.x, coords.y, coords.z)
 
-        if plyDistance < QBWeed.ActionDistance then
+        if closestPlantId ~= 0 and distance < QBWeed.ActionDistance then
+            local plant = housePlants[closestPlantId]
+            
             if plant.health <= 0 then
                 QBCore.Functions.Notify('Can\'t fertilize a dead plant', 'error', 3500)
             elseif plant.food >= 100 then
@@ -278,9 +290,6 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         if insideHouse() then
             local ped = PlayerPedId()
-            if next(housePlants) == nil then
-                closestPlantId = 0
-            end
 
             for id, plant in pairs(housePlants) do
                 local coords = json.decode(plant.coords)
@@ -305,8 +314,7 @@ Citizen.CreateThread(function()
 
                 -- Plant Actions
                 local actionMsgOffset = 0.15
-                if plant ~= nil and plyDistance <= QBWeed.ActionDistance then
-                    closestPlantId = id
+                if plant ~= nil and plyDistance < QBWeed.ActionDistance then
                     if plant.health > 0 then
                         if plant.stage == QBWeed.Plants[plant.sort]["highestStage"] then
                             DrawText3Ds(coords.x, coords.y, coords.z + actionMsgOffset, "Press ~g~ E ~w~ to harvest plant.")

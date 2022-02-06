@@ -1,5 +1,3 @@
-local QBCore = exports['qb-core']:GetCoreObject()
-
 -- Serves one plant for given building to client
 QBCore.Functions.CreateCallback('qb-weed:server:getHousePlant', function(source, callback, house, id)
     exports.oxmysql:query('SELECT * FROM house_plants WHERE building = ? AND id = ?', {house, id}, function(plant)

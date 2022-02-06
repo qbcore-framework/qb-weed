@@ -1,3 +1,5 @@
+QBCore = exports['qb-core']:GetCoreObject()
+
 QBWeed = {}
 
 QBWeed.GrowthTickTime = 9.6 * (60 * 1000) -- Controls when progress tick happens
