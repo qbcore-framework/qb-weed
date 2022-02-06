@@ -45,7 +45,6 @@ local function getClosestPlantId(x, y, z)
             closestDistance = plyDistance
         end
     end
-    print("Id: " .. tostring(closestPlantId) .. " Dist: " .. tostring(closestDistance))
 
     return closestPlantId, closestDistance
 end
