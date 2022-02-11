@@ -1,13 +1,13 @@
 -- Serves one plant for given building to client
 QBCore.Functions.CreateCallback('qb-weed:server:getHousePlant', function(source, callback, house, id)
-    exports.oxmysql:query('SELECT * FROM house_plants WHERE building = ? AND id = ?', {house, id}, function(plant)
+    MySQL.query('SELECT * FROM house_plants WHERE building = ? AND id = ?', {house, id}, function(plant)
         callback(plant)
     end)
 end)
 
 -- Serves all plants for given building to client
 QBCore.Functions.CreateCallback('qb-weed:server:getHousePlants', function(source, callback, house)
-    exports.oxmysql:query('SELECT * FROM house_plants WHERE building = ?', {house}, function(plants)
+    MySQL.query('SELECT * FROM house_plants WHERE building = ?', {house}, function(plants)
         callback(plants)
     end)
 end)
@@ -28,7 +28,7 @@ AddEventHandler('qb-weed:server:placePlant', function(house, coords, sort, seedS
     local Player = QBCore.Functions.GetPlayer(src)
     local gender = ((math.random()*100) <= QBWeed.ChanceOfFemale) and "F" or "M"
 
-    exports.oxmysql:insert('INSERT INTO house_plants (building, coords, gender, sort) VALUES (?, ?, ?, ?)',
+    MySQL.insert('INSERT INTO house_plants (building, coords, gender, sort) VALUES (?, ?, ?, ?)',
         {house, json.encode(coords), gender, sort}, function(insertId)
             if insertId ~= 0 then
                 Player.Functions.RemoveItem(sort, 1, seedSlot)
@@ -45,7 +45,7 @@ AddEventHandler('qb-weed:server:fertilizePlant', function(house, plant)
     local amount = math.random(QBWeed.Fertilizer["Min"], QBWeed.Fertilizer["Max"])
     local newFood = math.min(plant.food + amount, 100)
     
-    exports.oxmysql:query('UPDATE house_plants SET food = ? WHERE building = ? AND id = ?',
+    MySQL.query('UPDATE house_plants SET food = ? WHERE building = ? AND id = ?',
         {newFood, house, plant.id}, function(res)
             if res["affectedRows"] == 1 then
                 TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, plant.id, newFood, plant.health)
@@ -66,7 +66,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, plant)
     local seedAmount = math.random(QBWeed.Harvest[plant.gender]["Seeds"]["Min"], QBWeed.Harvest[plant.gender]["Seeds"]["Max"])
     local seedText = seedAmount == 1 and "seed" or "seeds"
     
-    exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?',
+    MySQL.query('DELETE FROM house_plants WHERE id = ? AND building = ?',
         {plant.id, house}, function(res)
             if res["affectedRows"] == 1 then
                 Player.Functions.AddItem('weed_' .. plant.sort .. '_seed', seedAmount)
@@ -82,7 +82,7 @@ end)
 -- Removes a dead plant
 RegisterServerEvent('qb-weed:server:removePlant')
 AddEventHandler('qb-weed:server:removePlant', function(house, plant)
-    exports.oxmysql:query('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house}, function(res)
+    MySQL.query('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house}, function(res)
         if res["affectedRows"] == 1 then
             TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
         end
@@ -92,7 +92,7 @@ end)
 -- Nutrition and food tick function
 Citizen.CreateThread(function()
     while true do
-        exports.oxmysql:query('SELECT * FROM house_plants', {}, function(housePlants)
+        MySQL.query('SELECT * FROM house_plants', {}, function(housePlants)
             for _, plant in pairs(housePlants) do
                 if plant.health > 0 then
                     local newFood = math.max(plant.food - 1, 0)
@@ -110,7 +110,7 @@ end)
 -- Growth tick function
 Citizen.CreateThread(function()
     while true do
-        exports.oxmysql:query('SELECT * FROM house_plants', {}, function(housePlants)
+        MySQL.query('SELECT * FROM house_plants', {}, function(housePlants)
             for _, plant in pairs(housePlants) do
                 if plant.health > QBWeed.MinimumHealth and plant.stage ~= QBWeed.Plants[plant.sort]["highestStage"] then
                     local newProgress = plant.progress + math.random(QBWeed.Progress["Min"], QBWeed.Progress["Max"])
