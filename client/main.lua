@@ -206,14 +206,22 @@ RegisterNetEvent('qb-weed:client:leaveHouse', function()
 end)
 
 -- Event triggered by the server when a single plant is fertilized
-RegisterNetEvent('qb-weed:client:refreshPlantStats', function (id, food, health)
-    if insideHouse() then
+RegisterNetEvent('qb-weed:client:refreshPlantStats', function (id, food, health, house)
+    if insideHouse() and currHouse == house then
         if housePlants[id] == nil then
             updateHousePlant(id)
         else
             housePlants[id].food = food
             housePlants[id].health = health
         end
+    end
+end)
+-- Event triggered by the server when a single plant is fertilized
+RegisterNetEvent('qb-weed:client:refreshAllPlantStats', function ()
+    if insideHouse() then
+        QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlants', function(plants)
+            updateHousePlants(plants)
+        end, currHouse)
     end
 end)
 -- Event triggered when the server has updated all housePlants

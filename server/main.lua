@@ -32,7 +32,7 @@ AddEventHandler('qb-weed:server:placePlant', function(house, coords, sort, seedS
         {house, json.encode(coords), gender, sort}, function(insertId)
             if insertId ~= 0 then
                 Player.Functions.RemoveItem(sort, 1, seedSlot)
-                TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, insertId, 100, 100)
+                TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, insertId, 100, 100, house)
             end
         end)
 end)
@@ -48,7 +48,7 @@ AddEventHandler('qb-weed:server:fertilizePlant', function(house, plant)
     MySQL.query('UPDATE house_plants SET food = ? WHERE building = ? AND id = ?',
         {newFood, house, plant.id}, function(res)
             if res["affectedRows"] == 1 then
-                TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, plant.id, newFood, plant.health)
+                TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, plant.id, newFood, plant.health, house)
                 TriggerClientEvent('QBCore:Notify', src,
                     QBWeed.Plants[plant.sort]["label"] .. ' | Nutrition: ' .. plant.food .. '% + ' .. amount .. '% (' ..
                     newFood .. '%)', 'success', 3500)
