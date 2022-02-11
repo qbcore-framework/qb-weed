@@ -216,17 +216,23 @@ RegisterNetEvent('qb-weed:client:refreshPlantStats', function (id, food, health)
         end
     end
 end)
--- Event triggered by the server to refresh model after stage update, manually maintains state of houseProps
-RegisterNetEvent('qb-weed:client:refreshPlantProp', function(id, newStage)
+-- Event triggered when the server has updated all housePlants
+RegisterNetEvent('qb-weed:client:refreshPlantProps', function()
     if insideHouse() then
-        if housePlants[id] == nil then
-            updateHousePlant(id)
-        else
-            housePlants[id].stage = newStage
-            housePlants[id].progress = 0
-            unrenderPlant(id)
-            renderPlant(id)
-        end
+        QBCore.Functions.TriggerCallback('qb-weed:server:getHousePlants', function(plants)
+            for _, plant in pairs(plants) do
+                local oldPlantData = housePlants[plant.id]
+                housePlants[plant.id] = plant
+                if oldPlantData == nil then
+                    renderPlant(plant.id)
+                else
+                    if oldPlantData.stage ~= plant.stage then
+                        unrenderPlant(plant.id)
+                        renderPlant(plant.id)
+                    end
+                end
+            end
+        end, currHouse)
     end
 end)
 

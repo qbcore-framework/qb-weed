@@ -98,17 +98,11 @@ Citizen.CreateThread(function()
                     local newFood = math.max(plant.food - 1, 0)
                     local newHealth = math.min(plant.health + 1, 100)
                     if plant.food < QBWeed.MinimumFood then newHealth = math.max(plant.health - 1, 0) end
-        
-                    exports.oxmysql:update('UPDATE house_plants SET food = ?, health = ? WHERE id = ?',
-                        {newFood, newHealth, plant.id}, function(res)
-                            if res == 1 then
-                                TriggerClientEvent('qb-weed:client:refreshPlantStats', -1, plant.id, newFood, newHealth)
-                            end
-                        end)
+                    MySQL.Sync.execute('UPDATE house_plants SET food = ?, health = ? WHERE id = ?', {newFood, newHealth, plant.id})
                 end
             end
+            TriggerClientEvent('qb-weed:client:refreshAllPlantStats', -1)
         end)
-
         Citizen.Wait(QBWeed.StatsTickTime)
     end
 end)
@@ -121,7 +115,6 @@ Citizen.CreateThread(function()
                 if plant.health > QBWeed.MinimumHealth and plant.stage ~= QBWeed.Plants[plant.sort]["highestStage"] then
                     local newProgress = plant.progress + math.random(QBWeed.Progress["Min"], QBWeed.Progress["Max"])
                     local newStage = plant.stage
-
                     if newProgress >= 100 then
                         newProgress = 0
                         if plant.stage == "stage-a" then
@@ -138,15 +131,10 @@ Citizen.CreateThread(function()
                             newStage = "stage-g"
                         end
                     end
-                    
-                    exports.oxmysql:update('UPDATE house_plants SET stage = ?, progress = ? WHERE id = ?',
-                        {newStage, newProgress, plant.id}, function(res)
-                            if res == 1 then
-                                TriggerClientEvent('qb-weed:client:refreshPlantProp', -1, plant.id, newStage, newProgress)
-                            end
-                        end)
+                    MySQL.Sync.execute('UPDATE house_plants SET stage = ?, progress = ? WHERE id = ?', {newStage, newProgress, plant.id})
                 end
             end
+            TriggerClientEvent('qb-weed:client:refreshPlantProps', -1)
         end)
         Citizen.Wait(QBWeed.GrowthTickTime)
     end
