@@ -5,6 +5,7 @@ QBWeed = {}
 QBWeed.GrowthTickTime = 9.6 * (60 * 1000) -- Controls when progress tick happens
 QBWeed.StatsTickTime = 19.2 * (60 * 1000) -- Controls when food ticks down & health ticks up or down
 
+QBWeed.PruneOnLoad = true       -- Prune all dead plants when the server loads
 QBWeed.ActionTime = 5 * 1000    -- Controls how long every action but harvesting takes
 QBWeed.HarvestTime = 12 * 1000  -- Controls how long harvesting takes
 

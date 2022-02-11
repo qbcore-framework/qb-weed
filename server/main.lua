@@ -1,3 +1,8 @@
+-- Prune onload
+if QBWeed.PruneOnLoad then
+    MySQL.query('DELETE FROM house_plants WHERE health = ?', {0})
+end
+
 -- Serves one plant for given building to client
 QBCore.Functions.CreateCallback('qb-weed:server:getHousePlant', function(source, callback, house, id)
     MySQL.query('SELECT * FROM house_plants WHERE building = ? AND id = ?', {house, id}, function(plant)
