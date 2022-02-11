@@ -96,51 +96,30 @@ end)
 
 -- Nutrition and food tick function
 Citizen.CreateThread(function()
+    local foodUpdate = 'food = (0.5 * ((food - 1) + ABS(food - 1)))'
+    local healthInc = 'food > ? AND health < 100 THEN health + 1'
+    local healthDec = 'food <= ? AND health > 0 THEN health - 1'
     while true do
-        MySQL.query('SELECT * FROM house_plants', {}, function(housePlants)
-            for _, plant in pairs(housePlants) do
-                if plant.health > 0 then
-                    local newFood = math.max(plant.food - 1, 0)
-                    local newHealth = math.min(plant.health + 1, 100)
-                    if plant.food < QBWeed.MinimumFood then newHealth = math.max(plant.health - 1, 0) end
-                    MySQL.Sync.execute('UPDATE house_plants SET food = ?, health = ? WHERE id = ?', {newFood, newHealth, plant.id})
-                end
-            end
-            TriggerClientEvent('qb-weed:client:refreshAllPlantStats', -1)
-        end)
+        MySQL.Sync.execute('UPDATE house_plants SET ' .. foodUpdate .. ' , health = CASE WHEN ' .. healthInc .. ' WHEN ' .. healthDec .. ' ELSE health END',
+            {QBWeed.MinimumFood, QBWeed.MinimumFood})
+        TriggerClientEvent('qb-weed:client:refreshAllPlantStats', -1)
         Citizen.Wait(QBWeed.StatsTickTime)
     end
 end)
 
 -- Growth tick function
 Citizen.CreateThread(function()
+    local caseAB = 'WHEN stage = "stage-a" THEN "stage-b" '
+    local caseBC = 'WHEN stage = "stage-b" THEN "stage-c" '
+    local caseCD = 'WHEN stage = "stage-c" THEN "stage-d" '
+    local caseDE = 'WHEN stage = "stage-d" THEN "stage-e" '
+    local caseEF = 'WHEN stage = "stage-e" THEN "stage-f" '
+    local caseFG = 'WHEN stage = "stage-f" THEN "stage-g" '
     while true do
-        MySQL.query('SELECT * FROM house_plants', {}, function(housePlants)
-            for _, plant in pairs(housePlants) do
-                if plant.health > QBWeed.MinimumHealth and plant.stage ~= QBWeed.Plants[plant.sort]["highestStage"] then
-                    local newProgress = plant.progress + math.random(QBWeed.Progress["Min"], QBWeed.Progress["Max"])
-                    local newStage = plant.stage
-                    if newProgress >= 100 then
-                        newProgress = 0
-                        if plant.stage == "stage-a" then
-                            newStage = "stage-b"
-                        elseif plant.stage == "stage-b" then
-                            newStage = "stage-c"
-                        elseif plant.stage == "stage-c" then
-                            newStage = "stage-d"
-                        elseif plant.stage == "stage-d" then
-                            newStage = "stage-e"
-                        elseif plant.stage == "stage-e" then
-                            newStage = "stage-f"
-                        elseif plant.stage == "stage-f" then
-                            newStage = "stage-g"
-                        end
-                    end
-                    MySQL.Sync.execute('UPDATE house_plants SET stage = ?, progress = ? WHERE id = ?', {newStage, newProgress, plant.id})
-                end
-            end
-            TriggerClientEvent('qb-weed:client:refreshPlantProps', -1)
-        end)
+        local progressGain = math.random(QBWeed.Progress["Min"], QBWeed.Progress["Max"])
+        MySQL.Sync.execute('UPDATE house_plants SET progress = (progress + ?) WHERE progress < 100 AND health > ?', {progressGain, QBWeed.MinimumHealth})
+        MySQL.Sync.execute('UPDATE house_plants SET stage = CASE ' .. caseAB .. caseBC .. caseCD .. caseDE .. caseEF .. caseFG .. ' ELSE stage END, progress = 0 WHERE progress >= 100 AND stage != "stage-g"', {})
+        TriggerClientEvent('qb-weed:client:refreshPlantProps', -1)
         Citizen.Wait(QBWeed.GrowthTickTime)
     end
 end)
