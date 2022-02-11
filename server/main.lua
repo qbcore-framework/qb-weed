@@ -72,7 +72,7 @@ AddEventHandler('qb-weed:server:harvestPlant', function(house, plant)
                 Player.Functions.AddItem('weed_' .. plant.sort .. '_seed', seedAmount)
                 Player.Functions.AddItem('weed_' .. plant.sort, weedAmount)
                 Player.Functions.RemoveItem('empty_weed_bag', weedAmount)
-                TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
+                TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id, house)
                 TriggerClientEvent('QBCore:Notify', src,
                     QBWeed.Plants[plant.sort]["label"] .. ' | Harvested ' .. weedAmount .. ' bags, ' .. seedAmount .. ' ' .. seedText, 'success', 3500)
             end
@@ -84,7 +84,7 @@ RegisterServerEvent('qb-weed:server:removePlant')
 AddEventHandler('qb-weed:server:removePlant', function(house, plant)
     MySQL.query('DELETE FROM house_plants WHERE id = ? AND building = ?', {plant.id, house}, function(res)
         if res["affectedRows"] == 1 then
-            TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id)
+            TriggerClientEvent('qb-weed:client:removePlant', -1, plant.id, house)
         end
     end)
 end)

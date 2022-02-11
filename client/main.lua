@@ -290,8 +290,8 @@ RegisterNetEvent('qb-weed:client:fertilizePlant', function(item)
 end)
 
 -- Event triggered by the server when it has to remove a plant
-RegisterNetEvent('qb-weed:client:removePlant', function(id)
-    if insideHouse() then
+RegisterNetEvent('qb-weed:client:removePlant', function(id, house)
+    if insideHouse() and currHouse == house then
         unrenderPlant(id)
         housePlants[id] = nil
     end
