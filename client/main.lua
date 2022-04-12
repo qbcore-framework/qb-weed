@@ -1,5 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local housePlants = {}
+local houseRefresh = false
 local insideHouse = false
 local currentHouse = nil
 
@@ -175,10 +176,12 @@ RegisterNetEvent('qb-weed:client:leaveHouse', function()
             currentHouse = nil
         end
     end)
+    houseRefresh = false
 end)
 
 RegisterNetEvent('qb-weed:client:refreshHousePlants', function(house)
     if currentHouse ~= nil and currentHouse == house then
+        houseRefresh = true
         despawnHousePlants()
         SetTimeout(500, function()
             QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
@@ -187,6 +190,8 @@ RegisterNetEvent('qb-weed:client:refreshHousePlants', function(house)
                 spawnHousePlants()
             end, house)
         end)
+        Wait(3000)
+        houseRefresh = false
     end
 end)
 
@@ -210,6 +215,7 @@ function loadAnimDict(dict)
 end
 
 RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
+    if houseRefresh then return end
     local ped = PlayerPedId()
     local plyCoords = GetOffsetFromEntityInWorldCoords(ped, 0, 0.75, 0)
     local plantData = {
