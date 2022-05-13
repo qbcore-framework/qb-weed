@@ -1,6 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
-QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(source, cb, building)
+QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(_, cb, building)
     local buildingPlants = {}
 
     MySQL.Async.fetchAll('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
@@ -37,7 +37,7 @@ end)
 CreateThread(function()
     while true do
         local housePlants = MySQL.Sync.fetchAll('SELECT * FROM house_plants', {})
-        for k, v in pairs(housePlants) do
+        for k, _ in pairs(housePlants) do
             if housePlants[k].food >= 50 then
                 MySQL.Async.execute('UPDATE house_plants SET food = ? WHERE plantid = ?',
                     {(housePlants[k].food - 1), housePlants[k].plantid})
@@ -66,7 +66,7 @@ end)
 CreateThread(function()
     while true do
         local housePlants = MySQL.Sync.fetchAll('SELECT * FROM house_plants', {})
-        for k, v in pairs(housePlants) do
+        for k, _ in pairs(housePlants) do
             if housePlants[k].health > 50 then
                 local Grow = math.random(1, 3)
                 if housePlants[k].progress + Grow < 100 then
@@ -105,43 +105,37 @@ CreateThread(function()
 end)
 
 QBCore.Functions.CreateUseableItem("weed_white-widow_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'white-widow', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_skunk_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'skunk', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_purple-haze_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'purple-haze', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_og-kush_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'og-kush', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_amnesia_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'amnesia', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_ak47_seed", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:placePlant', source, 'ak47', item)
 end)
 
 QBCore.Functions.CreateUseableItem("weed_nutrition", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
     TriggerClientEvent('qb-weed:client:foodPlant', source, item)
 end)
 
 RegisterServerEvent('qb-weed:server:removeSeed')
 AddEventHandler('qb-weed:server:removeSeed', function(itemslot, seed)
-    local Player = QBCore.Functions.GetPlayer(source)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
     Player.Functions.RemoveItem(seed, 1, itemslot)
 end)
 
