@@ -247,7 +247,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
     end
 end)
 
-RegisterNetEvent('qb-weed:client:foodPlant', function(_)
+RegisterNetEvent('qb-weed:client:foodPlant', function()
     if currentHouse ~= nil then
         if ClosestTarget ~= 0 then
             local ped = PlayerPedId()
@@ -290,8 +290,8 @@ RegisterNetEvent('qb-weed:client:foodPlant', function(_)
                         animDict = "timetable@gardener@filling_can",
                         anim = "gar_ig_5_filling_can",
                         flags = 16,
-			
-			            LocalPlayer.state:set("inv_busy", false, true)
+
+                        LocalPlayer.state:set("inv_busy", false, true)
                     }, {}, {}, function() -- Done
                         ClearPedTasks(ped)
                         local newFood = math.random(40, 60)
