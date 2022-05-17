@@ -291,7 +291,7 @@ RegisterNetEvent('qb-weed:client:foodPlant', function()
                         anim = "gar_ig_5_filling_can",
                         flags = 16,
 
-			            LocalPlayer.state:set("inv_busy", false, true)
+                        LocalPlayer.state:set("inv_busy", false, true)
                     }, {}, {}, function() -- Done
                         ClearPedTasks(ped)
                         local newFood = math.random(40, 60)
