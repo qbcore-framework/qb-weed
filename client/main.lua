@@ -2,6 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local housePlants = {}
 local insideHouse = false
 local currentHouse = nil
+local plantSpawned = false
 
 DrawText3Ds = function(x, y, z, text)
 	SetTextScale(0.35, 0.35)
@@ -30,13 +31,13 @@ end)
 function spawnHousePlants()
     CreateThread(function()
         if not plantSpawned then
-            for k, v in pairs(housePlants[currentHouse]) do
+            for k, _ in pairs(housePlants[currentHouse]) do
                 local plantData = {
                     ["plantCoords"] = {["x"] = json.decode(housePlants[currentHouse][k].coords).x, ["y"] = json.decode(housePlants[currentHouse][k].coords).y, ["z"] = json.decode(housePlants[currentHouse][k].coords).z},
                     ["plantProp"] = GetHashKey(QBWeed.Plants[housePlants[currentHouse][k].sort]["stages"][housePlants[currentHouse][k].stage]),
                 }
 
-                plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], false, false, false)
+                local plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], false, false, false)
                 while not plantProp do Wait(0) end
                 PlaceObjectOnGroundProperly(plantProp)
                 Wait(100)
@@ -51,7 +52,7 @@ end
 function despawnHousePlants()
     CreateThread(function()
         if plantSpawned then
-            for k, v in pairs(housePlants[currentHouse]) do
+            for k, _ in pairs(housePlants[currentHouse]) do
                 local plantData = {
                     ["plantCoords"] = {["x"] = json.decode(housePlants[currentHouse][k].coords).x, ["y"] = json.decode(housePlants[currentHouse][k].coords).y, ["z"] = json.decode(housePlants[currentHouse][k].coords).z},
                 }
@@ -76,7 +77,7 @@ CreateThread(function()
         if insideHouse then
             if plantSpawned then
                 local ped = PlayerPedId()
-                for k, v in pairs(housePlants[currentHouse]) do
+                for k, _ in pairs(housePlants[currentHouse]) do
                     local gender = "M"
                     if housePlants[currentHouse][k].gender == "woman" then gender = "F" end
 
@@ -122,10 +123,9 @@ CreateThread(function()
                                         flags = 16,
                                     }, {}, {}, function() -- Done
                                         ClearPedTasks(ped)
+                                        local amount = math.random(1, 6)
                                         if plantData["plantStats"]["gender"] == "M" then
                                             amount = math.random(1, 2)
-                                        else
-                                            amount = math.random(1, 6)
                                         end
                                         TriggerServerEvent('qb-weed:server:harvestPlant', currentHouse, amount, plantData["plantSort"]["name"], plantData["plantStats"]["plantId"])
                                     end, function() -- Cancel
@@ -202,13 +202,6 @@ RegisterNetEvent('qb-weed:client:refreshPlantStats', function()
     end
 end)
 
-function loadAnimDict(dict)
-    while (not HasAnimDictLoaded(dict)) do
-        RequestAnimDict(dict)
-        Wait(100)
-    end
-end
-
 RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
     local ped = PlayerPedId()
     local plyCoords = GetOffsetFromEntityInWorldCoords(ped, 0, 0.75, 0)
@@ -218,7 +211,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
         ["plantLabel"] = QBWeed.Plants[type]["label"]
     }
     local ClosestPlant = 0
-    for k, v in pairs(QBWeed.Props) do
+    for _, v in pairs(QBWeed.Props) do
         if ClosestPlant == 0 then
             ClosestPlant = GetClosestObjectOfType(plyCoords.x, plyCoords.y, plyCoords.z, 0.8, GetHashKey(v), false, false, false)
         end
@@ -236,7 +229,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
                 animDict = "amb@world_human_gardener_plant@male@base",
                 anim = "base",
                 flags = 16,
-		LocalPlayer.state:set("inv_busy", false, true)				
+		LocalPlayer.state:set("inv_busy", false, true)
             }, {}, {}, function() -- Done
                 ClearPedTasks(ped)
                 TriggerServerEvent('qb-weed:server:placePlant', json.encode(plantData["plantCoords"]), type, currentHouse)
@@ -244,7 +237,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
             end, function() -- Cancel
                 ClearPedTasks(ped)
                 QBCore.Functions.Notify("Process Canceled", "error")
-		LocalPlayer.state:set("inv_busy", false, true)				
+		LocalPlayer.state:set("inv_busy", false, true)
             end)
         else
             QBCore.Functions.Notify("Can't Place Here", 'error', 3500)
@@ -254,8 +247,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
     end
 end)
 
-RegisterNetEvent('qb-weed:client:foodPlant', function(item)
-    local plantData = {}
+RegisterNetEvent('qb-weed:client:foodPlant', function()
     if currentHouse ~= nil then
         if ClosestTarget ~= 0 then
             local ped = PlayerPedId()
@@ -264,7 +256,7 @@ RegisterNetEvent('qb-weed:client:foodPlant', function(item)
                 gender = "F"
             end
 
-            plantData = {
+            local plantData = {
                 ["plantCoords"] = {["x"] = json.decode(housePlants[currentHouse][ClosestTarget].coords).x, ["y"] = json.decode(housePlants[currentHouse][ClosestTarget].coords).y, ["z"] = json.decode(housePlants[currentHouse][ClosestTarget].coords).z},
                 ["plantStage"] = housePlants[currentHouse][ClosestTarget].stage,
                 ["plantProp"] = GetHashKey(QBWeed.Plants[housePlants[currentHouse][ClosestTarget].sort]["stages"][housePlants[currentHouse][ClosestTarget].stage]),
@@ -288,7 +280,7 @@ RegisterNetEvent('qb-weed:client:foodPlant', function(item)
                 if plantData["plantStats"]["food"] == 100 then
                     QBCore.Functions.Notify('The Plant Does Not Need Nutrition', 'error', 3500)
                 else
-		LocalPlayer.state:set("inv_busy", true, true)
+		            LocalPlayer.state:set("inv_busy", true, true)
                     QBCore.Functions.Progressbar("plant_weed_plant", "Feeding Plant", math.random(4000, 8000), false, true, {
                         disableMovement = true,
                         disableCarMovement = true,
@@ -298,15 +290,15 @@ RegisterNetEvent('qb-weed:client:foodPlant', function(item)
                         animDict = "timetable@gardener@filling_can",
                         anim = "gar_ig_5_filling_can",
                         flags = 16,
-			
-			LocalPlayer.state:set("inv_busy", false, true)
+
+                        LocalPlayer.state:set("inv_busy", false, true)
                     }, {}, {}, function() -- Done
                         ClearPedTasks(ped)
                         local newFood = math.random(40, 60)
                         TriggerServerEvent('qb-weed:server:foodPlant', currentHouse, newFood, plantData["plantSort"]["name"], plantData["plantStats"]["plantId"])
                     end, function() -- Cancel
                         ClearPedTasks(ped)
-			LocalPlayer.state:set("inv_busy", false, true)					
+			            LocalPlayer.state:set("inv_busy", false, true)
                         QBCore.Functions.Notify("Process Canceled", "error")
                     end)
                 end
