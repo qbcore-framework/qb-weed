@@ -3,7 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(_, cb, building)
     local buildingPlants = {}
 
-    MySQL.Async.fetchAll('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
+    MySQL.query('SELECT * FROM house_plants WHERE building = ?', {building}, function(plants)
         for i = 1, #plants, 1 do
             buildingPlants[#buildingPlants+1] = plants[i]
         end
@@ -24,36 +24,36 @@ RegisterNetEvent('qb-weed:server:placePlant', function(coords, sort, currentHous
     else
         gender = "woman"
     end
-    MySQL.Async.insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?, ?, ?, ?, ?)',
+    MySQL.insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?, ?, ?, ?, ?)',
         {currentHouse, coords, gender, sort, math.random(111111, 999999)})
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
 end)
 
 RegisterNetEvent('qb-weed:server:removeDeathPlant', function(building, plantId)
-    MySQL.Async.execute('DELETE FROM house_plants WHERE plantid = ? AND building = ?', {plantId, building})
+    MySQL.query('DELETE FROM house_plants WHERE plantid = ? AND building = ?', {plantId, building})
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, building)
 end)
 
 CreateThread(function()
     while true do
-        local housePlants = MySQL.Sync.fetchAll('SELECT * FROM house_plants', {})
+        local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
         for k, _ in pairs(housePlants) do
             if housePlants[k].food >= 50 then
-                MySQL.Async.execute('UPDATE house_plants SET food = ? WHERE plantid = ?',
+                MySQL.update('UPDATE house_plants SET food = ? WHERE plantid = ?',
                     {(housePlants[k].food - 1), housePlants[k].plantid})
                 if housePlants[k].health + 1 < 100 then
-                    MySQL.Async.execute('UPDATE house_plants SET health = ? WHERE plantid = ?',
+                    MySQL.update('UPDATE house_plants SET health = ? WHERE plantid = ?',
                         {(housePlants[k].health + 1), housePlants[k].plantid})
                 end
             end
 
             if housePlants[k].food < 50 then
                 if housePlants[k].food - 1 >= 0 then
-                    MySQL.Async.execute('UPDATE house_plants SET food = ? WHERE plantid = ?',
+                    MySQL.update('UPDATE house_plants SET food = ? WHERE plantid = ?',
                         {(housePlants[k].food - 1), housePlants[k].plantid})
                 end
                 if housePlants[k].health - 1 >= 0 then
-                    MySQL.Async.execute('UPDATE house_plants SET health = ? WHERE plantid = ?',
+                    MySQL.update('UPDATE house_plants SET health = ? WHERE plantid = ?',
                         {(housePlants[k].health - 1), housePlants[k].plantid})
                 end
             end
@@ -65,35 +65,35 @@ end)
 
 CreateThread(function()
     while true do
-        local housePlants = MySQL.Sync.fetchAll('SELECT * FROM house_plants', {})
+        local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
         for k, _ in pairs(housePlants) do
             if housePlants[k].health > 50 then
                 local Grow = math.random(1, 3)
                 if housePlants[k].progress + Grow < 100 then
-                    MySQL.Async.execute('UPDATE house_plants SET progress = ? WHERE plantid = ?',
+                    MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
                         {(housePlants[k].progress + Grow), housePlants[k].plantid})
                 elseif housePlants[k].progress + Grow >= 100 then
                     if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
                         if housePlants[k].stage == "stage-a" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-b', housePlants[k].plantid})
                         elseif housePlants[k].stage == "stage-b" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-c', housePlants[k].plantid})
                         elseif housePlants[k].stage == "stage-c" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-d', housePlants[k].plantid})
                         elseif housePlants[k].stage == "stage-d" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-e', housePlants[k].plantid})
                         elseif housePlants[k].stage == "stage-e" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-f', housePlants[k].plantid})
                         elseif housePlants[k].stage == "stage-f" then
-                            MySQL.Async.execute('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
                                 {'stage-g', housePlants[k].plantid})
                         end
-                        MySQL.Async.execute('UPDATE house_plants SET progress = ? WHERE plantid = ?',
+                        MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
                             {0, housePlants[k].plantid})
                     end
                 end
@@ -148,13 +148,13 @@ RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantNam
     if weedBag ~= nil then
         if weedBag.amount >= sndAmount then
             if house ~= nil then
-                local result = MySQL.Sync.fetchAll(
+                local result = MySQL.query.await(
                     'SELECT * FROM house_plants WHERE plantid = ? AND building = ?', {plantId, house})
                 if result[1] ~= nil then
                     Player.Functions.AddItem('weed_' .. plantName .. '_seed', amount)
                     Player.Functions.AddItem('weed_' .. plantName, sndAmount)
                     Player.Functions.RemoveItem('empty_weed_bag', sndAmount)
-                    MySQL.Async.execute('DELETE FROM house_plants WHERE plantid = ? AND building = ?',
+                    MySQL.query('DELETE FROM house_plants WHERE plantid = ? AND building = ?',
                         {plantId, house})
                     TriggerClientEvent('QBCore:Notify', src, 'The plant has been harvested', 'success', 3500)
                     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
@@ -175,17 +175,17 @@ end)
 RegisterNetEvent('qb-weed:server:foodPlant', function(house, amount, plantName, plantId)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local plantStats = MySQL.Sync.fetchAll(
+    local plantStats = MySQL.query.await(
         'SELECT * FROM house_plants WHERE building = ? AND sort = ? AND plantid = ?',
         {house, plantName, tostring(plantId)})
     TriggerClientEvent('QBCore:Notify', src,
         QBWeed.Plants[plantName]["label"] .. ' | Nutrition: ' .. plantStats[1].food .. '% + ' .. amount .. '% (' ..
             (plantStats[1].food + amount) .. '%)', 'success', 3500)
     if plantStats[1].food + amount > 100 then
-        MySQL.Async.execute('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
+        MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
             {100, house, plantId})
     else
-        MySQL.Async.execute('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
+        MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
             {(plantStats[1].food + amount), house, plantId})
     end
     Player.Functions.RemoveItem('weed_nutrition', 1)
