@@ -132,8 +132,7 @@ QBCore.Functions.CreateUseableItem("weed_nutrition", function(source, item)
     TriggerClientEvent('qb-weed:client:foodPlant', source, item)
 end)
 
-RegisterServerEvent('qb-weed:server:removeSeed')
-AddEventHandler('qb-weed:server:removeSeed', function(itemslot, seed)
+RegisterServerEvent('qb-weed:server:removeSeed', function(itemslot, seed)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     Player.Functions.RemoveItem(seed, 1, itemslot)
