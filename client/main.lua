@@ -40,7 +40,7 @@ function spawnHousePlants()
                 local plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"], false, false, false)
                 while not plantProp do Wait(0) end
                 PlaceObjectOnGroundProperly(plantProp)
-                Wait(100)
+                Wait(10)
                 FreezeEntityPosition(plantProp, true)
                 SetEntityAsMissionEntity(plantProp, false, false)
             end
@@ -180,7 +180,7 @@ end)
 RegisterNetEvent('qb-weed:client:refreshHousePlants', function(house)
     if currentHouse ~= nil and currentHouse == house then
         despawnHousePlants()
-        SetTimeout(500, function()
+        SetTimeout(100, function()
             QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
                 currentHouse = house
                 housePlants[currentHouse] = plants
@@ -193,7 +193,7 @@ end)
 RegisterNetEvent('qb-weed:client:refreshPlantStats', function()
     if insideHouse then
         despawnHousePlants()
-        SetTimeout(500, function()
+        SetTimeout(100, function()
             QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
                 housePlants[currentHouse] = plants
                 spawnHousePlants()
