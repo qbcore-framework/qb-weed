@@ -81,7 +81,7 @@ CreateThread(function()
                         for i, stage in pairs(stages) do
                             if housePlants[k].stage == stage and i <= 6 then
                                 MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                    {stage[i + 1], housePlants[k].plantid})
+                                    {stages[i + 1], housePlants[k].plantid})
                             end
                         MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
                             {0, housePlants[k].plantid})
