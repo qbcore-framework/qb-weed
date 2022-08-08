@@ -66,6 +66,10 @@ end)
 CreateThread(function()
     while true do
         local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
+        local stages = {
+            "stage-a", "stage-b", "stage-c", "stage-d",
+            "stage-e", "stage-f", "stage-g"
+        }
         for k, _ in pairs(housePlants) do
             if housePlants[k].health > 50 then
                 local Grow = math.random(1, 3)
@@ -74,27 +78,14 @@ CreateThread(function()
                         {(housePlants[k].progress + Grow), housePlants[k].plantid})
                 elseif housePlants[k].progress + Grow >= 100 then
                     if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
-                        if housePlants[k].stage == "stage-a" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-b', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-b" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-c', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-c" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-d', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-d" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-e', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-e" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-f', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-f" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-g', housePlants[k].plantid})
-                        end
+                        for i, stage in pairs(stages) do
+                            if housePlants[k].stage == stage and i <= 6 then
+                                MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
+                                    {stage[i + 1], housePlants[k].plantid})
+                            end
                         MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
                             {0, housePlants[k].plantid})
+                        end
                     end
                 end
             end
