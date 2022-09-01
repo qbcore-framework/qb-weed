@@ -155,19 +155,19 @@ RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantNam
                     Player.Functions.RemoveItem('empty_weed_bag', sndAmount)
                     MySQL.query('DELETE FROM house_plants WHERE plantid = ? AND building = ?',
                         {plantId, house})
-                    TriggerClientEvent('QBCore:Notify', src, 'The plant has been harvested', 'success', 3500)
+                    TriggerClientEvent('QBCore:Notify', src,  Lang:t('text.the_plant_has_been_harvested'), 'success', 3500)
                     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
                 else
-                    TriggerClientEvent('QBCore:Notify', src, 'This plant no longer exists?', 'error', 3500)
+                    TriggerClientEvent('QBCore:Notify', src, Lang:t('error.this_plant_no_longer_exists') , 'error', 3500)
                 end
             else
-                TriggerClientEvent('QBCore:Notify', src, 'House Not Found', 'error', 3500)
+                TriggerClientEvent('QBCore:Notify', src, Lang:t('error.house_not_found'), 'error', 3500)
             end
         else
-            TriggerClientEvent('QBCore:Notify', src, "You Don't Have Enough Resealable Bags", 'error', 3500)
+            TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_dont_have_enough_resealable_bags') , 'error', 3500)
         end
     else
-        TriggerClientEvent('QBCore:Notify', src, "You Don't Have Enough Resealable Bags", 'error', 3500)
+        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_Dont_have_enough_resealable_bags'), 'error', 3500)
     end
 end)
 
