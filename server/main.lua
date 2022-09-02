@@ -158,13 +158,13 @@ RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantNam
                     TriggerClientEvent('QBCore:Notify', src,  Lang:t('text.the_plant_has_been_harvested'), 'success', 3500)
                     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
                 else
-                    TriggerClientEvent('QBCore:Notify', src, Lang:t('error.this_plant_no_longer_exists') , 'error', 3500)
+                    TriggerClientEvent('QBCore:Notify', src, Lang:t('error.this_plant_no_longer_exists'), 'error', 3500)
                 end
             else
                 TriggerClientEvent('QBCore:Notify', src, Lang:t('error.house_not_found'), 'error', 3500)
             end
         else
-            TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_dont_have_enough_resealable_bags') , 'error', 3500)
+            TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_dont_have_enough_resealable_bags'), 'error', 3500)
         end
     else
         TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_Dont_have_enough_resealable_bags'), 'error', 3500)
