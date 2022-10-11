@@ -18,15 +18,20 @@ end)
 
 RegisterNetEvent('qb-weed:server:placePlant', function(coords, sort, currentHouse)
     local random = math.random(1, 2)
+    local result = MySQL.prepare.await('SELECT COUNT(*) FROM house_plants WHERE citizenid = ?', {Player.PlayerData.citizenid})
     local gender
     if random == 1 then
         gender = "man"
     else
         gender = "woman"
     end
-    MySQL.insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?, ?, ?, ?, ?)',
+    if result < QBWeed.MaxPlants then
+        MySQL.insert('INSERT INTO house_plants (building, coords, gender, sort, plantid) VALUES (?, ?, ?, ?, ?)',
         {currentHouse, coords, gender, sort, math.random(111111, 999999)})
-    TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
+        TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, currentHouse)
+    else
+        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.max_plants', {maxplants = QBWeed.MaxPlants}), 'error')
+    end
 end)
 
 RegisterNetEvent('qb-weed:server:removeDeathPlant', function(building, plantId)

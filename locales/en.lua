@@ -8,6 +8,7 @@ local Translations = {
         this_plant_no_longer_exists = "This plant no longer exists?",
         house_not_found = "House Not Found",
         you_dont_have_enough_resealable_bags = "You Don't Have Enough Resealable Bags",
+        max_plants = "Too much plants, just ${maxplants} do not more",
     },
     text = {
         sort = 'Sort:',

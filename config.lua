@@ -1,5 +1,6 @@
 QBWeed = {}
 QBWeed.HarvestTime = 40 * 1000
+QBWeed.MaxPlants = 10
 
 QBWeed.Plants = {
     ["og-kush"] = {
