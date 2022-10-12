@@ -17,6 +17,7 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(_, 
 end)
 
 RegisterNetEvent('qb-weed:server:placePlant', function(coords, sort, currentHouse)
+    local src = source
     local random = math.random(1, 2)
     local result = MySQL.prepare.await('SELECT COUNT(*) FROM house_plants WHERE citizenid = ?', {Player.PlayerData.citizenid})
     local gender
