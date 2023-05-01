@@ -14,6 +14,7 @@ local Translations = {
         harvest_plant = 'Presione ~g~ E ~w~ para cosechar la planta.',
         nutrition = "Nutrición:",
         health = "Salud:",
+        progress = "Progreso:",
         harvesting_plant = "Cosechando planta",
         planting = "Plantando",
         feeding_plant = "Alimentado planta",

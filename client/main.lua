@@ -107,7 +107,7 @@ CreateThread(function()
                         ClosestTarget = k
                         if plantData["plantStats"]["health"] > 0 then
                             if plantData["plantStage"] ~= plantData["plantStats"]["highestStage"] then
-                                DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"],  Lang:t('text.sort') .. plantData["plantSort"]["label"]..'~w~ ['..plantData["plantStats"]["gender"]..'] | '..Lang:t('text.nutrition')..' ~b~'..plantData["plantStats"]["food"]..'% ~w~ | '..Lang:t('text.health')..' ~b~'..plantData["plantStats"]["health"]..'%')
+                                DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"],  Lang:t('text.sort') .. plantData["plantSort"]["label"]..'~w~ ['..plantData["plantStats"]["gender"]..'] | '..Lang:t('text.nutrition')..' ~b~'..plantData["plantStats"]["food"]..'% ~w~ | '..Lang:t('text.health')..' ~b~'..plantData["plantStats"]["health"]..'% ~w~ | '..Lang:t('text.progress')..' ~b~'..plantData["plantStats"]["progress"]..'%')
                             else
                                 DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"] + 0.2, Lang:t('text.harvest_plant'))
                                 DrawText3Ds(plantData["plantCoords"]["x"], plantData["plantCoords"]["y"], plantData["plantCoords"]["z"],  Lang:t('text.sort')..' ~g~'..plantData["plantSort"]["label"]..'~w~ ['..plantData["plantStats"]["gender"]..'] | '..Lang:t('text.nutrition')..' ~b~'..plantData["plantStats"]["food"]..'% ~w~ | '..Lang:t('text.health')..' ~b~'..plantData["plantStats"]["health"]..'%')

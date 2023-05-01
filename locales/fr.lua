@@ -14,6 +14,7 @@ local Translations = {
         harvest_plant = 'Appuyez sur ~g~ E ~w~ pour recolter la plante.',
         nutrition = "Engrais:",
         health = "État:",
+        progress = "Progression:",
         harvesting_plant = "Récolte la plante..",
         planting = "Plante..",
         feeding_plant = "Donne de l'engrais",
