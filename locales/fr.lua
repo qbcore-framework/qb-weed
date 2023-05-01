@@ -20,6 +20,8 @@ local Translations = {
         feeding_plant = "Donne de l'engrais",
         the_plant_has_been_harvested = "La plante à été récoltée",
         removing_the_plant = "Retire la plante..",
+        stage = "Étape actuelle:",
+        highestStage = "Étape de récolte:",
     },
 }
 

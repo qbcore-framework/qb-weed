@@ -5,6 +5,8 @@ QBWeed.Progress = {
     max = 3,
 } -- how much progress will be added to a healthy plant every 9.6 minutes
 
+QBWeed.showStages = true -- show the stages of the plants
+
 QBWeed.Plants = {
     ["og-kush"] = {
         ["label"] = "OGKush 2g",

@@ -20,6 +20,8 @@ local Translations = {
         feeding_plant = "Feeding Plant",
         the_plant_has_been_harvested = "The plant has been harvested",
         removing_the_plant = "Removing The Plant",
+        stage = "Current Stage:",
+        highestStage = "Harvest Stage:",
     },
 }
 
