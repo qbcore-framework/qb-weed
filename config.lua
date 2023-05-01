@@ -1,5 +1,9 @@
 QBWeed = {}
-QBWeed.HarvestTime = 40 * 1000
+
+QBWeed.Progress = {
+    min = 1,
+    max = 3,
+} -- how much progress will be added to a healthy plant every 9.6 minutes
 
 QBWeed.Plants = {
     ["og-kush"] = {
