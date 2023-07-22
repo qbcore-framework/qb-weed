@@ -14,11 +14,14 @@ local Translations = {
         harvest_plant = 'Appuyez sur ~g~ E ~w~ pour recolter la plante.',
         nutrition = "Engrais:",
         health = "État:",
+        progress = "Progression:",
         harvesting_plant = "Récolte la plante..",
         planting = "Plante..",
         feeding_plant = "Donne de l'engrais",
         the_plant_has_been_harvested = "La plante à été récoltée",
         removing_the_plant = "Retire la plante..",
+        stage = "Étape actuelle:",
+        highestStage = "Étape de récolte:",
     },
 }
 
