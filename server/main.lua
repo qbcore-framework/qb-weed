@@ -68,7 +68,7 @@ CreateThread(function()
         local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
         for k, _ in pairs(housePlants) do
             if housePlants[k].health > 50 then
-                local Grow = math.random(1, 3)
+                local Grow = math.random(QBWeed.Progress.min, QBWeed.Progress.max)
                 if housePlants[k].progress + Grow < 100 then
                     MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
                         {(housePlants[k].progress + Grow), housePlants[k].plantid})

@@ -14,11 +14,14 @@ local Translations = {
         harvest_plant = 'Press ~g~ E ~w~ to harvest plant.',
         nutrition = "Nutrition:",
         health = "Health:",
+        progress = "Progress:",
         harvesting_plant = "Harvesting Plant",
         planting = "Planting",
         feeding_plant = "Feeding Plant",
         the_plant_has_been_harvested = "The plant has been harvested",
         removing_the_plant = "Removing The Plant",
+        stage = "Current Stage:",
+        highestStage = "Harvest Stage:",
     },
 }
 

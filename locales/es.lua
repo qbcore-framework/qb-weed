@@ -14,11 +14,14 @@ local Translations = {
         harvest_plant = 'Presione ~g~ E ~w~ para cosechar la planta.',
         nutrition = "Nutrición:",
         health = "Salud:",
+        progress = "Progreso:",
         harvesting_plant = "Cosechando planta",
         planting = "Plantando",
         feeding_plant = "Alimentado planta",
         the_plant_has_been_harvested = "La planta ha sido cosechada",
         removing_the_plant = "Quitando planta",
+        stage = "Etapa actual:",
+        highestStage = "Etapa de cosecha:",
     },
 }
 
