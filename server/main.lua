@@ -167,7 +167,7 @@ RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantNam
             TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_dont_have_enough_resealable_bags'), 'error', 3500)
         end
     else
-        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_Dont_have_enough_resealable_bags'), 'error', 3500)
+        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.you_dont_have_enough_resealable_bags'), 'error', 3500)
     end
 end)
 
@@ -177,13 +177,17 @@ RegisterNetEvent('qb-weed:server:foodPlant', function(house, amount, plantName, 
     local plantStats = MySQL.query.await(
         'SELECT * FROM house_plants WHERE building = ? AND sort = ? AND plantid = ?',
         {house, plantName, tostring(plantId)})
-    TriggerClientEvent('QBCore:Notify', src,
-        QBWeed.Plants[plantName]["label"] .. ' | Nutrition: ' .. plantStats[1].food .. '% + ' .. amount .. '% (' ..
-            (plantStats[1].food + amount) .. '%)', 'success', 3500)
     if plantStats[1].food + amount > 100 then
+        local newAmount = 100 - plantStats[1].food
+        TriggerClientEvent('QBCore:Notify', src,
+        QBWeed.Plants[plantName]["label"] .. ' | Nutrition: ' .. plantStats[1].food .. '% + ' .. newAmount .. '% (' ..
+            (plantStats[1].food + newAmount) .. '%)', 'success', 3500)
         MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
             {100, house, plantId})
     else
+        TriggerClientEvent('QBCore:Notify', src,
+        QBWeed.Plants[plantName]["label"] .. ' | Nutrition: ' .. plantStats[1].food .. '% + ' .. amount .. '% (' ..
+            (plantStats[1].food + amount) .. '%)', 'success', 3500)
         MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',
             {(plantStats[1].food + amount), house, plantId})
     end
