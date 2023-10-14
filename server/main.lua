@@ -34,7 +34,6 @@ CreateThread(function()
     while true do
         local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
         for _, plant in pairs(housePlants) do
-            local
             local plantFood = plant.food
             local plantHealth = plant.health
 
