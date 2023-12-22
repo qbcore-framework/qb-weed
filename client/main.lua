@@ -21,6 +21,8 @@ end
 
 RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
     QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
+        if not plants then return end
+        print('L24', house, json.encode(plants))
         currentHouse = house
         housePlants[currentHouse] = plants
         insideHouse = true
@@ -31,20 +33,22 @@ end)
 function spawnHousePlants()
     CreateThread(function()
         if not plantSpawned then
-            for k, _ in pairs(housePlants[currentHouse]) do
-                local plantData = {
-                    ["plantCoords"] = json.decode(housePlants[currentHouse][k].coords),
-                    ["plantProp"] = GetHashKey(QBWeed.Plants[housePlants[currentHouse][k].sort]["stages"][housePlants[currentHouse][k].stage]),
-                }
+            if currentHouse then
+                for k, _ in pairs(housePlants[currentHouse]) do
+                    local plantData = {
+                        ["plantCoords"] = json.decode(housePlants[currentHouse][k].coords),
+                        ["plantProp"] = GetHashKey(QBWeed.Plants[housePlants[currentHouse][k].sort]["stages"][housePlants[currentHouse][k].stage]),
+                    }
 
-                local plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"].x, plantData["plantCoords"].y, plantData["plantCoords"].z, false, false, false)
-                while not plantProp do Wait(0) end
-                PlaceObjectOnGroundProperly(plantProp)
-                Wait(10)
-                FreezeEntityPosition(plantProp, true)
-                SetEntityAsMissionEntity(plantProp, false, false)
+                    local plantProp = CreateObject(plantData["plantProp"], plantData["plantCoords"].x, plantData["plantCoords"].y, plantData["plantCoords"].z, false, false, false)
+                    while not plantProp do Wait(0) end
+                    PlaceObjectOnGroundProperly(plantProp)
+                    Wait(10)
+                    FreezeEntityPosition(plantProp, true)
+                    SetEntityAsMissionEntity(plantProp, false, false)
+                end
+                plantSpawned = true
             end
-            plantSpawned = true
         end
     end)
 end
