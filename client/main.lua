@@ -3,8 +3,9 @@ local housePlants = {}
 local insideHouse = false
 local currentHouse = nil
 local plantSpawned = false
+local ClosestTarget = 0
 
-DrawText3Ds = function(x, y, z, text)
+local DrawText3Ds = function(x, y, z, text)
     SetTextScale(0.35, 0.35)
     SetTextFont(4)
     SetTextProportional(1)
@@ -18,16 +19,6 @@ DrawText3Ds = function(x, y, z, text)
     DrawRect(0.0, 0.0 + 0.0125, 0.017 + factor, 0.03, 0, 0, 0, 75)
     ClearDrawOrigin()
 end
-
-RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
-    QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
-        if not plants then return end
-        currentHouse = house
-        housePlants[currentHouse] = plants
-        insideHouse = true
-        spawnHousePlants()
-    end, house)
-end)
 
 local function spawnHousePlants()
     CreateThread(function()
@@ -50,6 +41,8 @@ local function spawnHousePlants()
     end)
 end
 
+
+
 local function despawnHousePlants()
     CreateThread(function()
         if plantSpawned then
@@ -70,7 +63,18 @@ local function despawnHousePlants()
     end)
 end
 
-local ClosestTarget = 0
+RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
+    QBCore.Functions.TriggerCallback('qb-weed:server:getBuildingPlants', function(plants)
+        if not plants then return end
+        currentHouse = house
+        housePlants[currentHouse] = plants
+        insideHouse = true
+        spawnHousePlants()
+    end, house)
+end)
+
+
+
 
 CreateThread(function()
     while true do
