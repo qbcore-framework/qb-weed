@@ -109,35 +109,22 @@ CreateThread(function()
                         {(housePlants[k].progress + Grow), housePlants[k].plantid})
                 elseif housePlants[k].progress + Grow >= 100 then
                     if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
-                        local nextStageInd = QBWeed.Stages:find(housePlants[k].stage:gsub('stage-', '')) + 1
-                        local nextStage = QBWeed.Stages:sub(nextStageInd, nextStageInd)
-
-                        if nextStage then
-                            MySQL.update('UPDATE house_plants SET stage = ?, progress = 0 WHERE plantid = ?',
-                                {'stage-' .. nextStage, housePlants[k].plantid})
-                        end
+                        MySQL.update('UPDATE house_plants SET stage = ?, progress = 0 WHERE plantid = ?',
+                            {housePlants[k].stage + 1, housePlants[k].plantid})
                     end
                 end
             end
             if healthTick then
-                local plantFood = plant.food
-                local plantHealth = plant.health
-
-                if plantFood >= 50 then
-                    plantFood = math.max(0, plantFood - 1)
-                    plantHealth = math.min(100, plantHealth + 1)
-                else
-                    plantFood = math.max(0, plantFood - 1)
-                    plantHealth = math.max(0, plantHealth - 1)
-                end
+                local plantFood = math.max(0, plant.food - QBWeed.FoodUsage)
+                local plantHealth = (plantFood >= 50) and math.min(100, plant.health + 1) or math.max(0, plant.health - 1)
 
                 MySQL.update('UPDATE house_plants SET food = ?, health = ? WHERE plantid = ?',
                     {plantFood, plantHealth, plant.plantid})
             end
         end
 
-        TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
+        TriggerClientEvent('qb-weed:client:refreshHousePlants', -1)
         healthTick = not healthTick
-        Wait((60 * 1000) * 9.6)
+        Wait((60 * 1000) * QBWeed.GrowthTick)
     end
 end)
