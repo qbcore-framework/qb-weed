@@ -1,14 +1,14 @@
 QBWeed = {}
 
 QBWeed.Progress = {
-    min = 1,
-    max = 3,
+    min = 1, -- Changing this will change growth time progression. Example 1 to 50 will give 50 progression in the 9.6 min cycle.
+    max = 3, -- see above, make sure max is more then min.
 } -- how much progress will be added to a healthy plant every 9.6 minutes
 
 QBWeed.showStages = true -- show the stages of the plants
 
 QBWeed.Plants = {
-    ["og-kush"] = {
+    ["ogkush"] = {
         ["label"] = "OGKush 2g",
         ["item"] = "weed_og-kush",
         ["stages"] = {
@@ -64,7 +64,7 @@ QBWeed.Plants = {
         },
         ["highestStage"] = "stage-g"
     },
-    ["purple-haze"] = {
+    ["purplehaze"] = {
         ["label"] = "Purple Haze 2g",
         ["item"] = "weed_purple-haze",
         ["stages"] = {
@@ -78,7 +78,7 @@ QBWeed.Plants = {
         },
         ["highestStage"] = "stage-g"
     },
-    ["white-widow"] = {
+    ["whitewidow"] = {
         ["label"] = "White Widow 2g",
         ["item"] = "weed_white-widow",
         ["stages"] = {
