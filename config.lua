@@ -10,7 +10,7 @@ QBWeed.showStages = true -- show the stages of the plants
 QBWeed.Plants = {
     ["ogkush"] = {
         ["label"] = "OGKush 2g",
-        ["item"] = "weed_og-kush",
+        ["item"] = "weed_ogkush",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -66,7 +66,7 @@ QBWeed.Plants = {
     },
     ["purplehaze"] = {
         ["label"] = "Purple Haze 2g",
-        ["item"] = "weed_purple-haze",
+        ["item"] = "weed_purplehaze",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
@@ -80,7 +80,7 @@ QBWeed.Plants = {
     },
     ["whitewidow"] = {
         ["label"] = "White Widow 2g",
-        ["item"] = "weed_white-widow",
+        ["item"] = "weed_whitewidow",
         ["stages"] = {
             ["stage-a"] = "bkr_prop_weed_01_small_01c",
             ["stage-b"] = "bkr_prop_weed_01_small_01b",
