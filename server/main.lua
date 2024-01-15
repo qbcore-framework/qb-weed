@@ -100,20 +100,20 @@ local function plantUseableItem(source, item, plantType)
     TriggerClientEvent('qb-weed:client:placePlant', source, plantType, item)
 end
 
-QBCore.Functions.CreateUseableItem("weed_white-widow_seed", function(source, item)
-    plantUseableItem(source, item, 'white-widow')
+QBCore.Functions.CreateUseableItem("weed_whitewidow_seed", function(source, item)
+    plantUseableItem(source, item, 'whitewidow')
 end)
 
 QBCore.Functions.CreateUseableItem("weed_skunk_seed", function(source, item)
     plantUseableItem(source, item, 'skunk')
 end)
 
-QBCore.Functions.CreateUseableItem("weed_purple-haze_seed", function(source, item)
-    plantUseableItem(source, item, 'purple-haze')
+QBCore.Functions.CreateUseableItem("weed_purplehaze_seed", function(source, item)
+    plantUseableItem(source, item, 'purplehaze')
 end)
 
-QBCore.Functions.CreateUseableItem("weed_og-kush_seed", function(source, item)
-    plantUseableItem(source, item, 'og-kush')
+QBCore.Functions.CreateUseableItem("weed_ogkush_seed", function(source, item)
+    plantUseableItem(source, item, 'ogkush')
 end)
 
 QBCore.Functions.CreateUseableItem("weed_amnesia_seed", function(source, item)
