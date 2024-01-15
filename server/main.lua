@@ -30,104 +30,6 @@ RegisterNetEvent('qb-weed:server:removeDeathPlant', function(building, plantId)
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, building)
 end)
 
-CreateThread(function()
-    while true do
-        local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
-        for _, plant in pairs(housePlants) do
-            local plantFood = plant.food
-            local plantHealth = plant.health
-
-            if plantFood >= 50 then
-                plantFood = math.max(0, plantFood - 1)
-                plantHealth = math.min(100, plantHealth + 1)
-            else
-                plantFood = math.max(0, plantFood - 1)
-                plantHealth = math.max(0, plantHealth - 1)
-            end
-
-            MySQL.update('UPDATE house_plants SET food = ?, health = ? WHERE plantid = ?',
-                {plantFood, plantHealth, plant.plantid})
-        end
-
-        TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
-        Wait((60 * 1000) * 19.2)
-    end
-end)
-
-CreateThread(function()
-    while true do
-        local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
-        for k, _ in pairs(housePlants) do
-            if housePlants[k].health > 50 then
-                local Grow = math.random(QBWeed.Progress.min, QBWeed.Progress.max)
-                if housePlants[k].progress + Grow < 100 then
-                    MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
-                        {(housePlants[k].progress + Grow), housePlants[k].plantid})
-                elseif housePlants[k].progress + Grow >= 100 then
-                    if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
-                        if housePlants[k].stage == "stage-a" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-b', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-b" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-c', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-c" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-d', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-d" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-e', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-e" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-f', housePlants[k].plantid})
-                        elseif housePlants[k].stage == "stage-f" then
-                            MySQL.update('UPDATE house_plants SET stage = ? WHERE plantid = ?',
-                                {'stage-g', housePlants[k].plantid})
-                        end
-                        MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
-                            {0, housePlants[k].plantid})
-                    end
-                end
-            end
-        end
-        TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
-        Wait((60 * 1000) * 9.6)
-    end
-end)
-
-
-local function plantUseableItem(source, item, plantType)
-    TriggerClientEvent('qb-weed:client:placePlant', source, plantType, item)
-end
-
-QBCore.Functions.CreateUseableItem("weed_whitewidow_seed", function(source, item)
-    plantUseableItem(source, item, 'whitewidow')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_skunk_seed", function(source, item)
-    plantUseableItem(source, item, 'skunk')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_purplehaze_seed", function(source, item)
-    plantUseableItem(source, item, 'purplehaze')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_ogkush_seed", function(source, item)
-    plantUseableItem(source, item, 'ogkush')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_amnesia_seed", function(source, item)
-    plantUseableItem(source, item, 'amnesia')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_ak47_seed", function(source, item)
-    plantUseableItem(source, item, 'ak47')
-end)
-
-QBCore.Functions.CreateUseableItem("weed_nutrition", function(source, item)
-    TriggerClientEvent('qb-weed:client:foodPlant', source, item)
-end)
-
 RegisterServerEvent('qb-weed:server:removeSeed', function(itemslot, seed)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -179,4 +81,63 @@ RegisterNetEvent('qb-weed:server:foodPlant', function(house, amount, plantName, 
         {updatedFood, house, plantId})
     Player.Functions.RemoveItem('weed_nutrition', 1)
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if resourceName ~= GetCurrentResourceName() then return end
+
+    for plantName, _ in pairs(QBWeed.Plants) do
+        QBCore.Functions.CreateUseableItem("weed_" .. plantName .. "_seed", function(source, item)
+            TriggerClientEvent('qb-weed:client:placePlant', source, plantName, item)
+        end)
+    end
+
+    QBCore.Functions.CreateUseableItem("weed_nutrition", function(source, item)
+        TriggerClientEvent('qb-weed:client:foodPlant', source, item)
+    end)
+end)
+
+CreateThread(function()
+    local healthTick = false
+    while true do
+        local housePlants = MySQL.query.await('SELECT * FROM house_plants', {})
+        for k, plant in pairs(housePlants) do
+            if housePlants[k].health > 50 then
+                local Grow = math.random(QBWeed.Progress.min, QBWeed.Progress.max)
+                if housePlants[k].progress + Grow < 100 then
+                    MySQL.update('UPDATE house_plants SET progress = ? WHERE plantid = ?',
+                        {(housePlants[k].progress + Grow), housePlants[k].plantid})
+                elseif housePlants[k].progress + Grow >= 100 then
+                    if housePlants[k].stage ~= QBWeed.Plants[housePlants[k].sort]["highestStage"] then
+                        local nextStageInd = QBWeed.Stages:find(housePlants[k].stage:gsub('stage-', '')) + 1
+                        local nextStage = QBWeed.Stages:sub(nextStageInd, nextStageInd)
+
+                        if nextStage then
+                            MySQL.update('UPDATE house_plants SET stage = ?, progress = 0 WHERE plantid = ?',
+                                {'stage-' .. nextStage, housePlants[k].plantid})
+                        end
+                    end
+                end
+            end
+            if healthTick then
+                local plantFood = plant.food
+                local plantHealth = plant.health
+
+                if plantFood >= 50 then
+                    plantFood = math.max(0, plantFood - 1)
+                    plantHealth = math.min(100, plantHealth + 1)
+                else
+                    plantFood = math.max(0, plantFood - 1)
+                    plantHealth = math.max(0, plantHealth - 1)
+                end
+
+                MySQL.update('UPDATE house_plants SET food = ?, health = ? WHERE plantid = ?',
+                    {plantFood, plantHealth, plant.plantid})
+            end
+        end
+
+        TriggerClientEvent('qb-weed:client:refreshPlantStats', -1)
+        healthTick = not healthTick
+        Wait((60 * 1000) * 9.6)
+    end
 end)

@@ -41,8 +41,6 @@ local function spawnHousePlants()
     end)
 end
 
-
-
 local function despawnHousePlants()
     CreateThread(function()
         if plantSpawned then
@@ -73,13 +71,10 @@ RegisterNetEvent('qb-weed:client:getHousePlants', function(house)
     end, house)
 end)
 
-
-
-
 CreateThread(function()
     while true do
         Wait(0)
-        if insideHouse  and plantSpawned then
+        if insideHouse and plantSpawned then
             local ped = PlayerPedId()
             for k in pairs(housePlants[currentHouse]) do
                 local gender = (housePlants[currentHouse][k].gender == "woman") and "F" or "M"
@@ -162,8 +157,7 @@ CreateThread(function()
                     end
                 end
             end
-        end
-        if not insideHouse then
+        elseif not insideHouse then
             Wait(5000)
         end
     end

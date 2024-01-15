@@ -6,6 +6,7 @@ QBWeed.Progress = {
 } -- how much progress will be added to a healthy plant every 9.6 minutes
 
 QBWeed.showStages = true -- show the stages of the plants
+QBWeed.Stages = 'abcdefg' -- Stages the plants go through when growing
 
 QBWeed.Plants = {
     ["ogkush"] = {
