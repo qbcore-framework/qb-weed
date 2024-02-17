@@ -90,7 +90,6 @@ local function inHouse()
         while currentHouse do
             local plyCoords = GetEntityCoords(PlayerPedId())
             closestPlant = 0
-            if housePlants[currentHouse] == nil then break end
             for k in pairs(housePlants[currentHouse]) do
                 local plantCoords = json.decode(housePlants[currentHouse][k].coords)
                 if #(plyCoords - vector3(plantCoords.x, plantCoords.y, plantCoords.z)) < 0.8 then
