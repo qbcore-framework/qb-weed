@@ -7,12 +7,8 @@ QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(_, 
         for i = 1, #plants, 1 do
             buildingPlants[#buildingPlants + 1] = plants[i]
         end
-
-        if #buildingPlants > 0 then
-            cb(buildingPlants)
-        else
-            cb(nil)
-        end
+        
+        cb(buildingPlants)
     end)
 end)
 
