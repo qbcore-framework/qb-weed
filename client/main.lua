@@ -205,7 +205,7 @@ RegisterNetEvent('qb-weed:client:placePlant', function(type, item)
     }, {}, {}, function() -- Done
         ClearPedTasks(ped)
         TriggerServerEvent('qb-weed:server:placePlant', json.encode(plantData['plantCoords']), type, currentHouse)
-        TriggerServerEvent('qb-weed:server:removeSeed', item.slot, type)
+        TriggerServerEvent('qb-weed:server:removeSeed', item.slot, item.name)
     end, function() -- Cancel
         ClearPedTasks(ped)
         QBCore.Functions.Notify(Lang:t('error.process_canceled'), 'error')
