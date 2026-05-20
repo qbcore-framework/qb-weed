@@ -1,4 +1,4 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['qb-core']:GetCoreObject({ 'Functions' })
 
 QBCore.Functions.CreateCallback('qb-weed:server:getBuildingPlants', function(_, cb, building)
     local buildingPlants = {}
@@ -28,15 +28,15 @@ end)
 
 RegisterServerEvent('qb-weed:server:removeSeed', function(itemslot, seed)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = exports['qb-core']:GetPlayer(src)
     if not Player then return end
     exports['qb-inventory']:RemoveItem(src, seed, 1, itemslot, 'qb-weed:server:removeSeed')
 end)
 
 RegisterNetEvent('qb-weed:server:harvestPlant', function(house, amount, plantName, plantId)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
-    local weedBag = Player.Functions.GetItemByName('empty_weed_bag')
+    local Player = exports['qb-core']:GetPlayer(src)
+    local weedBag = Player.GetItemByName('empty_weed_bag')
     local sndAmount = math.random(12, 16)
     if weedBag ~= nil and weedBag.amount >= sndAmount then
         if house ~= nil then
@@ -61,12 +61,12 @@ end)
 
 RegisterNetEvent('qb-weed:server:foodPlant', function(house, amount, plantName, plantId)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = exports['qb-core']:GetPlayer(src)
     if not Player then return end
-    local plantStats = MySQL.query.await('SELECT * FROM house_plants WHERE building = ? AND sort = ? AND plantid = ?',{ house, plantName, tostring(plantId) })
+    local plantStats = MySQL.query.await('SELECT * FROM house_plants WHERE building = ? AND sort = ? AND plantid = ?', { house, plantName, tostring(plantId) })
     local updatedFood = math.min(100, plantStats[1].food + amount)
-    TriggerClientEvent('QBCore:Notify', src, QBWeed.Plants[plantName]['label'] ..' | Nutrition: ' .. plantStats[1].food .. '% + ' .. updatedFood - plantStats[1].food .. '% (' ..updatedFood .. '%)', 'success', 3500)
-    MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?',{ updatedFood, house, plantId })
+    TriggerClientEvent('QBCore:Notify', src, QBWeed.Plants[plantName]['label'] .. ' | Nutrition: ' .. plantStats[1].food .. '% + ' .. updatedFood - plantStats[1].food .. '% (' .. updatedFood .. '%)', 'success', 3500)
+    MySQL.update('UPDATE house_plants SET food = ? WHERE building = ? AND plantid = ?', { updatedFood, house, plantId })
     exports['qb-inventory']:RemoveItem(src, 'weed_nutrition', 1, false, 'qb-weed:server:foodPlant')
     TriggerClientEvent('qb-weed:client:refreshHousePlants', -1, house)
 end)

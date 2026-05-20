@@ -1,4 +1,4 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['qb-core']:GetCoreObject({ 'Functions' })
 local housePlants, currentHouse, plantSpawned, closestPlant = {}, nil, false, 0
 
 local function drawText3Ds(x, y, z, text)
